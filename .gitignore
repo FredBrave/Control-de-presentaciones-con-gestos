@@ -1,0 +1,74 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv/
+
+# Configuración local
+*.env
+*.local
+*.secret
+
+# Logs y archivos temporales
+*.log
+*.sqlite3
+*.bak
+*.tmp
+*.swp
+*.DS_Store
+
+# =========================
+# Django
+# =========================
+*.pot
+*.pyc
+*.mo
+db.sqlite3
+media/
+staticfiles/
+# Archivos de migración que no quieras versionar
+**/migrations/*.pyc
+**/migrations/__pycache__/
+**/migrations/*.py
+
+# =========================
+# MediaPipe / OpenCV / Modelos
+# =========================
+# Modelos de Deep Learning entrenados
+*.h5
+*.hdf5
+*.pb
+*.tflite
+*.onnx
+*.ckpt
+
+# Datos grandes / imágenes
+dataset/
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.mp4
+*.avi
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# =========================
+# Otros
+# =========================
+__pycache__/
+*.py[cod]
