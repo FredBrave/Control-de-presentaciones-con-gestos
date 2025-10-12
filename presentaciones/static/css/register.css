@@ -1,0 +1,219 @@
+
+:root {
+    --register-color-primary: #7A30C0; 
+    --register-color-secondary: #FC37AC; 
+    --register-color-text-dark: #333;
+    --register-color-text-light: #fff;
+    --register-header-height: 64px; 
+    --register-padding-base: 30px;
+}
+
+
+
+.auth-container {
+    display: flex;
+    padding-top: var(--register-header-height);
+    min-height: calc(100vh - var(--register-header-height));
+    box-sizing: border-box;
+}
+
+
+.auth-visual-side {
+    flex: 1;
+    background-color: var(--register-color-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--register-padding-base);
+    text-align: center;
+    
+}
+
+
+.illustration-circle {
+    width: 350px;
+    height: 350px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+}
+
+.illustration-circle img {
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 50%;
+}
+
+
+.auth-form-side {
+    flex: 1;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--register-padding-base);
+}
+
+.form-card {
+    max-width: 400px; 
+    width: 100%;
+    padding: 40px 20px; 
+    background: #fff; 
+    text-align: center; 
+}
+
+.logo-title-auth {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, #7A30C0, #FC37AC);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.form-title {
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--register-color-text-dark);
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--register-color-text-dark);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--register-color-primary);
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+    font-size: 1.1rem;
+}
+
+.password-toggle:hover {
+    color: var(--register-color-primary);
+}
+
+.btn-register {
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, var(--register-color-primary) 0%, var(--register-color-secondary) 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 1rem;
+}
+
+.btn-register:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(122, 48, 192, 0.3);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--register-color-text-dark);
+}
+
+.auth-footer a {
+    color: var(--register-color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+        padding-top: calc(var(--register-header-height) + 10px);
+    }
+
+    .auth-visual-side {
+        min-height: 200px;
+        padding: 1rem;
+    }
+
+    .illustration-circle {
+        width: 150px;
+        height: 150px;
+    }
+
+    .auth-form-side {
+        padding: 1.5rem;
+    }
+
+    .form-card {
+        padding: 30px 15px;
+    }
+
+    .logo-title-auth {
+        font-size: 1.6rem;
+    }
+
+    .form-title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-card {
+        padding: 20px 10px; 
+    }
+
+    .auth-visual-side {
+        min-height: 150px;
+    }
+
+    .illustration-circle {
+        width: 120px;
+        height: 120px;
+    }
+}

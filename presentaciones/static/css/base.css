@@ -1,0 +1,275 @@
+/* Variables de Color (Corregidas para SLIDEMOTION) */
+:root {
+    --color-primary: #000000; /* Morado Principal */
+    --color-secondary: #f7f7f7f3; /* Rosa/Magenta (Botones) */
+    --color-link: #8404d3; /* Morado Oscuro */
+    --color-header-start: #9920e4; /* Degradado inicio (Rosa) */
+    --color-header-end: #7B1FA2; /* Degradado fin (Morado más oscuro) */
+    --color-text-dark: #1F2937;
+    --color-off-white: #ffffff;
+    --color-light-gray: #F3F4F6;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-light-gray); /* Fondo general de la página */
+}
+
+/* --- Base Layout para Footer Fijo --- */
+
+.base-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content-area {
+    flex: 1; /* Esto hace que el área de contenido ocupe todo el espacio restante */
+    width: 100%;
+    padding-top: 64px; /* Espacio para el header fijo */
+    box-sizing: border-box;
+}
+
+/* --- Main Content Container (Contenido Dinámico) --- */
+.main-content {
+    flex: 1; /* Ocupa todo el espacio entre header y footer */
+    width: 100%;
+    /* SIN padding-top - cada página maneja su propio espaciado */
+    box-sizing: border-box;
+    min-height: calc(100vh - 64px - 120px); /* Altura mínima considerando header y footer */
+}
+
+/* Placeholder para el contenido de la página */
+.placeholder-section {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    background: var(--color-off-white);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* --- 1. HEADER (BARRA PRINCIPAL) --- */
+
+.header-slidemotion {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.5rem;
+    /* Degradado del Header con los colores corregidos */
+    background: linear-gradient(to right, var(--color-header-start) 0%, var(--color-header-end) 100%);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--color-off-white);
+    font-size: 1.2rem;
+    font-weight: 80;
+    letter-spacing: 0.03em;
+    padding: 5px 12px;
+    background-color: var(--color-off-white);
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    background-color: rgb(255, 255, 255);
+}
+
+.logo-link:hover {
+    transform: translateY(-1px);
+    
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.logo-img {
+    height: 48px;
+    width: 48px;
+    margin-right: 1rem;
+    object-fit: contain;
+}
+
+.logo-content {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    
+}
+
+.logo-text {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.05em;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logo-slogan {
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: linear-gradient(135deg, #A855F7 0%, #2563EB 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0.9;
+    margin-top: -2px;
+    letter-spacing: 0.02em;
+    
+}
+
+
+
+.auth-controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: -0.5rem; /* Mueve los botones un poco a la izquierda */
+}
+
+.auth-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid var(--color-off-white);
+    text-align: center;
+}
+
+.auth-btn-login {
+    background-color: var(--color-off-white);
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    margin-right: 10px; /* Mueve el botón un poco a la izquierda */
+}
+
+.auth-btn-login:hover {
+    background-color: var(--color-light-gray);
+    color: var(--color-link);
+    margin-right: 10px; /* Mueve el botón un poco a la izquierda */
+
+}
+
+.auth-btn-register {
+    background-color: var(--color-secondary);
+    color: var(--color-off-black);
+    border: 2px solid var(--color-secondary);
+    margin-right: 40px; /* Mueve el botón un poco a la izquierda */
+
+}
+
+.auth-btn-register:hover {
+    background-color: var(--color-link);
+    border-color: var(--color-link);
+}
+
+/* --- 3. FOOTER --- */
+
+.main-footer {
+    background-color: var(--color-link); /* Morado Oscuro */
+    color: var(--color-off-white);
+    padding: 2rem 0 0;
+    font-size: 0.9rem;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.footer-description {
+    max-width: 400px;
+}
+
+.footer-description h3 {
+    font-size: 1.2rem;
+    color: var(--color-secondary); /* Resaltar SLIDEMOTION */
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+}
+
+.footer-description p {
+    line-height: 1.5;
+    color: #E0E0E0;
+}
+
+.footer-creators h4 {
+    font-size: 1rem;
+    border-bottom: 2px solid var(--color-secondary);
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.footer-creators ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-creators li {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #F0F0F0;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Media Query para Responsividad */
+@media (max-width: 600px) {
+    .header-slidemotion {
+        padding: 0 1rem;
+        flex-wrap: wrap;
+    }
+
+    .auth-controls {
+        flex-grow: 1;
+        justify-content: space-around;
+        margin-top: 0.5rem;
+    }
+    
+    .auth-btn {
+        flex-grow: 1;
+        padding: 0.5rem 0.5rem;
+    }
+
+    .footer-inner {
+        flex-direction: column;
+        padding: 0 1rem 2rem;
+    }
+
+    .footer-description {
+        max-width: 100%;
+    }
+}
