@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm
-
+from django.contrib.auth import get_user_model
+User = get_user_model() 
 def registerPage(request):
     form = CustomUserCreationForm()
     if request.method == 'POST':
@@ -25,7 +26,26 @@ def registerPage(request):
     return render(request, 'seguridad/register.html', {'form': form})
 
 def loginPage(request):
-    return render(request, 'seguridad/login.html')
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        try:
+            user_obj = User.objects.get(email=email)
+            username = user_obj.username
+        except User.DoesNotExist:
+            messages.error(request, "Usuario o contraseña incorrectos")
+            return render(request, "seguridad/login.html")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect("home")  
+        else:
+            messages.error(request, "Usuario o contraseña incorrectos")
+
+    return render(request, "seguridad/login.html")
 
 def home(request):
     return render(request, 'presentaciones/home.html')
