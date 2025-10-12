@@ -12,6 +12,9 @@ env/
 ENV/
 .venv/
 
+# Servicio en la nube
+config/credentials.json
+
 # Configuración local
 *.env
 *.local
@@ -58,17 +61,3 @@ dataset/
 *.bmp
 *.mp4
 *.avi
-
-# =========================
-# IDE / Editor
-# =========================
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# =========================
-# Otros
-# =========================
-__pycache__/
-*.py[cod]
