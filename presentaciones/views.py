@@ -3,6 +3,9 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm
+from django.contrib.auth import get_user_model                    
+User = get_user_model()
+
 
 def registerPage(request):
     form = CustomUserCreationForm()
@@ -12,15 +15,21 @@ def registerPage(request):
         if 'password1' in data and 'password2' not in data:
             data['password2'] = data['password1']
 
-        form = CustomUserCreationForm(data)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.username = user.username.lower()
-            user.save()
-            login(request, user)
-            return redirect('home')
-        else:
-            messages.error(request, 'Ocurrió un error durante el registro')
+        email = data.get('email', '').lower()
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'El correo ya está en uso')
+        else:  
+            form = CustomUserCreationForm(data)
+            if form.is_valid():
+                user = form.save(commit=False)
+                user.username = user.username.lower()
+                user.save()
+                login(request, user)
+                return redirect('home')
+            else:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, error)
 
     return render(request, 'seguridad/register.html', {'form': form})
 
