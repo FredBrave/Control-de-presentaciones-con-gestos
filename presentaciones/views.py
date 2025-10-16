@@ -10,6 +10,7 @@ from google.oauth2 import service_account
 from .google_drive_oauth import get_or_create_user_folder, upload_to_drive
 from googleapiclient.discovery import build
 import tempfile
+from googleapiclient.errors import HttpError
 from django.urls import reverse
 import time
 from .models import Presentacion
@@ -273,7 +274,7 @@ def import_selected_presentations(request):
             raise Exception("No se pudo obtener la carpeta del usuario.")
         
         imported_count = 0
-        
+        errores = []
         presentations = get_user_presentations(credentials_dict)
         presentations_dict = {p['id']: p for p in presentations}
         
@@ -294,7 +295,7 @@ def import_selected_presentations(request):
                     if presentation_id in presentations_dict:
                         thumbnail_url = presentations_dict[presentation_id].get('thumbnailLink')
                     
-                    presentacion = Presentacion.objects.create(
+                    Presentacion.objects.create(
                         usuario=request.user,
                         nombre=copied_data['name'],
                         drive_id=copied_data['id'],
@@ -303,18 +304,31 @@ def import_selected_presentations(request):
                     )
                     imported_count += 1
                     
+            except HttpError as e:
+                if e.resp.status == 404:
+                    msg = f"La presentación con ID {presentation_id} no se encontró o no tienes permisos para copiarla."
+                else:
+                    msg = f"Ocurrió un error al importar la presentación {presentation_id}."
+                errores.append(msg)
+                logger.error(msg)
+                continue
+
             except Exception as e:
-                logger.error(f"Error al importar presentación {presentation_id}: {e}")
+                msg = f"Error inesperado al importar presentación {presentation_id}: {e}"
+                errores.append(msg)
+                logger.error(msg)
                 continue
         
         if imported_count > 0:
-            messages.success(
-                request, 
-                f'Se importaron {imported_count} presentación(es) correctamente.'
-            )
-        else:
+            messages.success(request, f'Se importaron {imported_count} presentación(es) correctamente.')
+
+        if errores:
+            for err in errores:
+                messages.error(request, err)
+
+        if imported_count == 0 and not errores:
             messages.warning(request, 'No se pudo importar ninguna presentación.')
-        
+
         if 'google_credentials' in request.session:
             del request.session['google_credentials']
         
@@ -322,5 +336,5 @@ def import_selected_presentations(request):
         
     except Exception as e:
         logger.error(f"Error al importar presentaciones: {e}")
-        messages.error(request, 'Error al importar las presentaciones.')
+        messages.error(request, f"Ocurrió un error al importar las presentaciones: {e}")
         return redirect('home')
