@@ -1,0 +1,38 @@
+{% extends 'presentaciones/base.html' %}
+{% block title %}Subir presentación{% endblock %}
+
+{% block content %}
+<h3>Subir presentación</h3>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Campo de título -->
+    <div class="mb-3">
+        {{ form.titulo.label_tag }}
+        {{ form.titulo }}
+        {% if form.titulo.errors %}
+            <div class="text-danger">{{ form.titulo.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div class="mb-3">
+        <label for="file_type">Tipo de archivo:</label>
+        <select id="file_type" class="form-control">
+            <option value="pdf">PDF</option>
+            <option value="pptx">PPTX</option>
+        </select>
+    </div>
+
+    <!-- Campo de archivo -->
+    <div class="mb-3">
+        {{ form.archivo.label_tag }}
+        {{ form.archivo }}
+        {% if form.archivo.errors %}
+            <div class="text-danger">{{ form.archivo.errors }}</div>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Subir</button>
+</form>
+{% endblock %}

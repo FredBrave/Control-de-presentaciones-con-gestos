@@ -5,6 +5,11 @@ from django.urls import path
 urlpatterns = [
     path('login/', views.loginPage, name='login'),
     path('register/', views.registerPage, name='register'),
-  #  path('logout/', views.logoutUser, name='logout'),
-    path('', views.home, name='home')
+    path('logout/', views.logoutUser, name='logout'),
+    path('', views.home, name='home'),
+    path('upload/', views.uploadPage, name='upload'),
+    path('import-google-slides/', views.import_from_google_slides, name='import_from_google_slides'),
+    path('oauth2callback/', views.oauth2callback, name='oauth2callback'),
+    path('select-presentations/', views.select_presentations, name='select_presentations'),
+    path('import-selected/', views.import_selected_presentations, name='import_selected_presentations'),
 ]

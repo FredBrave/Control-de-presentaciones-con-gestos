@@ -1,1 +1,104 @@
-<h1>hola</h1>
+{% extends "presentaciones/base.html" %}
+{% load static %}
+
+{% block title %}SLIDEMOTION - Dashboard Principal{% endblock %}
+
+{% block extra_head %}
+<!-- Carga de Estilos específicos del Home -->
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+<!-- CSS de componentes -->
+<link rel="stylesheet" href="{% static 'css/componentes/accesso-rapido.css' %}">
+<link rel="stylesheet" href="{% static 'css/componentes/tutoriales.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- CONTENIDO DINÁMICO (Estructura de dos columnas: Sidebar + Vista) -->
+<div id="dashboard-container" class="dashboard-layout">
+            
+            <!-- SIDEBAR DE ACCESO RÁPIDO (COMPONENTE) -->
+            <aside id="sidebar" class="sidebar-slidemotion">
+                <!-- Indicador de Cámara -->
+                <div class="camera-indicator">
+                    <span class="camera-text">
+                        <i class="fas fa-video"></i> cámara detectada
+                    </span>
+                    <span class="camera-dot"></span>
+                </div>
+
+                <!-- Componente de Acceso Rápido -->
+                {% include 'presentaciones/componentes/accesso-rapido.html' with current_page='home' %}
+            </aside>
+            
+            <!-- B. VIEW CONTAINER (Contenido Principal - Lado Derecho) -->
+            <div id="view-container" class="view-container">
+                <div class="view-padding">
+                    <!-- 1. Sección de Bienvenida y Búsqueda -->
+                    <div class="welcome-section">
+                        <div>
+                            <h1 class="welcome-title">
+                                ¡Hola {{ user.username|title }}! <span class="welcome-subtitle">Listo para presentar?</span>
+                            </h1>
+                        </div>
+                        <div class="search-box">
+                            <input type="text" placeholder="Buscar Archivo" class="search-input">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- 2. Botones de Acción -->
+                    <div class="action-buttons-group">
+                        <a href="{% url 'upload' %}" class="btn-primary">
+                            <i class="fas fa-plus-circle"></i> Crear nueva presentación
+                        </a>
+                        <a href="{% url 'import_from_google_slides' %}" class="btn-primary btn-google">
+                            <i class="fab fa-google-drive"></i> Importar Google Slides
+                        </a>
+                    </div>
+                    
+                    <!-- 3. Contenedor de Presentaciones Recientes -->
+                    <h2 class="section-title">Presentaciones Recientes:</h2>
+                        <div class="presentation-grid">
+                            {% if presentaciones %}
+                                {% for p in presentaciones %}
+                                    <div class="presentation-card">
+                                        <a href="{{ p.enlace_drive }}" target="_blank" class="presentation-link">
+                                            {% if p.miniatura_url %}
+                                                <img src="{{ p.miniatura_url }}" 
+                                                     alt="{{ p.nombre }}" 
+                                                     class="presentation-thumb"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                <div class="presentation-thumb placeholder" style="display:none;">
+                                                    <i class="fas fa-file-powerpoint fa-3x"></i>
+                                                </div>
+                                            {% elif p.miniatura and p.miniatura.url %}
+                                                <img src="{{ p.miniatura.url }}" 
+                                                     alt="{{ p.nombre }}" 
+                                                     class="presentation-thumb">
+                                            {% else %}
+                                                <div class="presentation-thumb placeholder">
+                                                    <i class="fas fa-file-powerpoint fa-3x"></i>
+                                                </div>
+                                            {% endif %}
+                                        </a>
+                                        <h3 class="presentation-title">{{ p.nombre }}</h3>
+                                        <p class="presentation-date">
+                                            Subida el {{ p.fecha_subida|date:"d/m/Y" }}
+                                        </p>
+                                        <a href="{{ p.enlace_drive }}" target="_blank" class="btn-view">
+                                            <i class="fas fa-eye"></i> Ver
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-folder-open fa-3x"></i>
+                                    <p>Aún no has subido ninguna presentación.</p>
+                                    <p>Usa el botón <strong>"Crear nueva presentación"</strong> para empezar.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% include 'presentaciones/componentes/tutoriales.html' %}
+                </div>
+            </div>
+</div>
+{% endblock %}

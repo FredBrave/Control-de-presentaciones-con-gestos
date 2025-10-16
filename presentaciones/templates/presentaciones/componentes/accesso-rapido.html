@@ -1,0 +1,25 @@
+<!-- COMPONENTE: ACCESO RÁPIDO - SIDEBAR -->
+<div class="quick-access">
+    <h3 class="sidebar-title">Acceso Rápido:</h3>
+    <nav class="nav-menu">
+        <!-- Botones de Navegación (Usamos 'dash-btn-active' para página actual) -->
+        <a href="{% url 'home' %}" class="dash-btn {% if current_page == 'home' %}dash-btn-active{% endif %}">
+            <i class="fas fa-home"></i> Inicio
+        </a>
+        <a href="{% url 'upload' %}" class="dash-btn {% if current_page == 'upload' %}dash-btn-active{% endif %}">
+            <i class="fas fa-upload"></i> Subir Presentacion
+        </a>
+        <a href="#" class="dash-btn {% if current_page == 'presentation' %}dash-btn-active{% endif %}">
+            <i class="fas fa-play-circle"></i> Iniciar Presentación
+        </a>
+        <a href="#" class="dash-btn {% if current_page == 'gestures' %}dash-btn-active{% endif %}">
+            <i class="fas fa-hands"></i> Guía de Gestos
+        </a>
+        <a href="#" class="dash-btn {% if current_page == 'api' %}dash-btn-active{% endif %}">
+            <i class="fas fa-cog"></i> Configurar API
+        </a>
+        <a href="#" class="dash-btn {% if current_page == 'profile' %}dash-btn-active{% endif %}">
+            <i class="fas fa-user-circle"></i> Mi cuenta
+        </a>
+    </nav>
+</div>

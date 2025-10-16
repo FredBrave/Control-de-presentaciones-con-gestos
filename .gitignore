@@ -1,7 +1,7 @@
 # =========================
 # Python
 # =========================
-__pycache__/
+_pycache_/
 *.py[cod]
 *$py.class
 *.so
@@ -15,6 +15,11 @@ ENV/
 # Servicio en la nube
 config/credentials.json
 config/*.json
+config/
+presentaciones/config/oauth.json
+presentaciones/config/*.json
+token.json
+>>>>>>> stage
 
 # Configuración local
 *.env
@@ -39,9 +44,9 @@ db.sqlite3
 media/
 staticfiles/
 # Archivos de migración que no quieras versionar
-**/migrations/*.pyc
-**/migrations/__pycache__/
-**/migrations/*.py
+*/migrations/.pyc
+**/migrations/_pycache_/
+*/migrations/.py
 
 # =========================
 # MediaPipe / OpenCV / Modelos

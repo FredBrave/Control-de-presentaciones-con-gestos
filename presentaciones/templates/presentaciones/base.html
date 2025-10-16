@@ -27,24 +27,26 @@
                 </a>
             </div>
 
-            <!-- Sección de Controles de Usuario (Modo No Logueado: Iniciar Sesión / Registrarse) -->
-            <!--
-            <nav class="auth-controls">
-                <a href="{% url 'login' %}" class="auth-btn auth-btn-login">Iniciar Sesión</a>
-                <a href="{% url 'register' %}" class="auth-btn auth-btn-register">Registrarse</a>
-            </nav>
-            -->
-
-            <!-- Nota: Para el modo Logueado, la nav sería similar a la anterior: -->
-            <nav class="user-controls">
-                <div class="user-pill">
-                    <i class="fas fa-user-circle mr-1"></i> Lekyam
-                </div>
-                <button class="logout-btn">
-                    Cerrar Sesion
-                </button>
-            </nav> 
-            -->
+            {% if user.is_authenticated %}
+                <!-- Modo logueado -->
+                <nav class="user-controls">
+                    <div class="user-pill">
+                        <i class="fas fa-user-circle mr-1"></i> {{ user.username }}
+                    </div>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </nav>
+            {% else %}
+                <!-- Modo no logueado -->
+                <nav class="auth-controls">
+                    <a href="{% url 'login' %}" class="auth-btn auth-btn-login">Iniciar Sesión</a>
+                    <a href="{% url 'register' %}" class="auth-btn auth-btn-register">Registrarse</a>
+                </nav>
+            {% endif %}
         </header>
         
         <main class="main-content">
