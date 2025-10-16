@@ -1,0 +1,76 @@
+<!-- COMPONENTE: TUTORIALES Y AYUDA -->
+<div class="tutorials-help-section">
+    <h2 class="section-title mt-2 pt-6 border-top">Tutoriales y ayuda:</h2>
+    <div class="utility-grid">
+        <div class="utility-item">
+            <a href="#" class="utility-btn"><i class="fas fa-upload"></i></a>
+            <span class="utility-text">Subir Archivo</span>
+        </div>
+        <div class="utility-item">
+            <a href="#" class="utility-btn"><i class="fas fa-hands"></i></a>
+            <span class="utility-text">Guía de Gestos</span>
+        </div>
+        <div class="utility-item">
+            <a href="#" class="utility-btn tutorial-btn" data-feature="camera"><i class="fas fa-camera"></i></a>
+            <span class="utility-text">Conectar Cámara</span>
+        </div>
+        <div class="utility-item">
+            <a href="#" class="utility-btn tutorial-btn" data-feature="screen"><i class="fas fa-desktop"></i></a>
+            <span class="utility-text">Configurar Pantalla</span>
+        </div>
+        <div class="utility-item">
+            <a href="#" class="utility-btn tutorial-btn" data-feature="settings"><i class="fas fa-sliders-h"></i></a>
+            <span class="utility-text">Configuración</span>
+        </div>
+        <div class="utility-item">
+            <a href="#" class="utility-btn tutorial-btn" data-feature="share"><i class="fas fa-share-alt"></i></a>
+            <span class="utility-text">Compartir</span>
+        </div>
+        <div class="utility-item">
+            <a href="#" class="utility-btn tutorial-btn" data-feature="comments"><i class="fas fa-comment-alt"></i></a>
+            <span class="utility-text">Comentarios</span>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Solo ejecutar si no estamos en la página de gestos
+    const currentPath = window.location.pathname;
+    if (!currentPath.includes('/gestos/')) {
+        const tutorialBtns = document.querySelectorAll('.tutorial-btn');
+        
+        tutorialBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const feature = this.getAttribute('data-feature');
+                
+                let message = '';
+                let icon = '';
+                
+                switch(feature) {
+                    case 'camera':
+                        message = '📷 Conectar Cámara\n\n¡Próximamente!\nEsta función estará disponible en una futura actualización para conectar y configurar tu cámara web.';
+                        break;
+                    case 'screen':
+                        message = '🖥️ Configurar Pantalla\n\n¡Próximamente!\nPodrás configurar resolución, orientación y múltiples monitores para tus presentaciones.';
+                        break;
+                    case 'settings':
+                        message = '⚙️ Configuración\n\n¡Próximamente!\nAccede a configuraciones avanzadas, preferencias de usuario y personalización de la interfaz.';
+                        break;
+                    case 'share':
+                        message = '🔗 Compartir\n\n¡Próximamente!\nComparte tus presentaciones por enlace, email o redes sociales de forma sencilla.';
+                        break;
+                    case 'comments':
+                        message = '💬 Comentarios\n\n¡Próximamente!\nPermite que tu audiencia deje comentarios y feedback en tiempo real durante las presentaciones.';
+                        break;
+                    default:
+                        message = '🚀 Función en desarrollo\n\n¡Próximamente!\nEsta característica estará disponible en una futura actualización.';
+                }
+                
+                alert(message);
+            });
+        });
+    }
+});
+</script>

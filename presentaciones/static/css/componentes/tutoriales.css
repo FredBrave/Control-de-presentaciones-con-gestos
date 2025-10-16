@@ -1,0 +1,118 @@
+/* =================================================================
+   COMPONENTE: TUTORIALES Y AYUDA
+   Estilos específicos para el componente de tutoriales y ayuda
+   ================================================================= */
+
+/* Contenedor del componente - MÁS COMPACTO */
+.tutorials-help-section {
+    margin-bottom: 1.5rem; /* Reducido de 2rem a 1.5rem */
+    margin-top: 1.5rem; /* Reducido de 2rem a 1.5rem */
+}
+
+/* Título de sección - MÁS COMPACTO */
+.section-title {
+    font-size: 1.2rem; /* Reducido de 1.5rem a 1.2rem */
+    color: #333;
+    margin-bottom: 0.8rem; /* Reducido de 1rem a 0.8rem */
+    font-weight: 600;
+}
+
+/* Grid de utilidades - MÁS COMPACTO */
+.utility-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Reducido de 120px a 100px */
+    gap: 1rem; /* Reducido de 1.5rem a 1rem */
+    margin-bottom: 1.5rem; /* Reducido de 2rem a 1.5rem */
+}
+
+/* Item individual de utilidad - MÁS COMPACTO */
+.utility-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.3rem; /* Reducido de 0.5rem a 0.3rem */
+}
+
+/* Botón circular de utilidad - MÁS PEQUEÑO */
+.utility-btn {
+    width: 45px; /* Reducido de 60px a 45px */
+    height: 45px; /* Reducido de 60px a 45px */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.1rem; /* Reducido de 1.5rem a 1.1rem */
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3); /* Sombra más pequeña */
+}
+
+.utility-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Texto descriptivo - MÁS PEQUEÑO */
+.utility-text {
+    font-size: 0.75rem; /* Reducido de 0.9rem a 0.75rem */
+    color: #6c757d;
+    font-weight: 500;
+    line-height: 1.1; /* Reducido de 1.2 a 1.1 */
+}
+
+/* Utilidades de espaciado y bordes */
+.mt-2 { 
+    margin-top: 0.5rem; 
+}
+
+.pt-6 { 
+    padding-top: 1.5rem; 
+}
+
+.border-top { 
+    border-top: 1px solid #dee2e6; 
+}
+
+/* Responsive para el componente */
+@media (max-width: 768px) {
+    .utility-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 1rem;
+    }
+    
+    .utility-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3rem;
+    }
+    
+    .utility-text {
+        font-size: 0.8rem;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .utility-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 0.8rem;
+    }
+    
+    .utility-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+    }
+    
+    .utility-text {
+        font-size: 0.75rem;
+    }
+}
