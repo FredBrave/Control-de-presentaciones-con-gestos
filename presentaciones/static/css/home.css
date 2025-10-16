@@ -1,0 +1,474 @@
+/* ============================================== */
+/* SLIDEMOTION - HOME/DASHBOARD CSS STYLES - COMPLETAMENTE INDEPENDIENTE */
+/* ============================================== */
+
+/* Variables específicas para HOME */
+:root {
+    --home-header-height: 64px; /* Altura del header base */
+}
+
+/* Contenedor específico del HOME - PADDING CORRECTO */
+#dashboard-container {
+    padding-top: var(--home-header-height); /* Solo el header, sin extra */
+    min-height: calc(100vh - var(--home-header-height));
+    box-sizing: border-box;
+}
+
+/* Reset específico solo para elementos del dashboard - NO GLOBAL */
+.dashboard-layout * {
+    box-sizing: border-box;
+}
+
+/* Estilos específicos del dashboard sin sobrescribir base.css */
+.dashboard-layout {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #000000;
+}
+
+/* ============================================== */
+/* LAYOUT DASHBOARD - INDEPENDIENTE */
+/* ============================================== */
+.dashboard-layout {
+    display: flex;
+    flex-direction: row;
+    min-height: calc(100vh - 64px - 200px); /* Altura mínima sin header ni footer */
+}
+
+/* ============================================== */
+/* SIDEBAR */
+/* ============================================== */
+.sidebar-slidemotion {
+    width: 240px;
+    background: linear-gradient(135deg, #B53DE8 0%, #764ba2 100%);
+    color: white;
+    flex-shrink: 0;
+    padding: 1rem 0.8rem;
+    min-height: calc(100vh - 64px - 200px); /* Altura mínima sin sobrepasar footer */
+}
+
+/* Indicador de Cámara */
+.camera-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.1);
+    padding: 0.5rem 0.8rem; /* Más compacto */
+    border-radius: 20px;
+    margin-bottom: 1.5rem; /* Menos espacio */
+}
+
+.camera-text {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.camera-dot {
+    width: 12px;
+    height: 12px;
+    background: #4CAF50;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Menú Sidebar */
+.quick-access {
+    margin-top: 1rem;
+
+}
+
+.sidebar-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: rgba(255,255,255,0.9);
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dash-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    gap: 0.75rem;
+}
+
+.dash-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateX(5px);
+    color: white;
+    text-decoration: none;
+}
+
+.dash-btn-active {
+    background: rgba(255,255,255,0.2);
+    border-left: 4px solid #FFD700;
+}
+
+/* ============================================== */
+/* CONTENEDOR PRINCIPAL */
+/* ============================================== */
+.view-container {
+    flex: 1;
+    background: #f8f9fa;
+    overflow-y: auto;
+                
+
+    
+}
+
+.view-padding {
+    padding: 0.5rem 1.5rem 1rem 1.5rem; /* MÁS COMPACTO */
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ============================================== */
+/* SECCIÓN DE BIENVENIDA */
+/* ============================================== */
+.welcome-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.2rem; /* SÚPER COMPACTO */
+    margin-bottom: 0.8rem; /* SÚPER COMPACTO */
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.welcome-title {
+    font-size: 1.6rem; /* Más pequeño */
+    color: #333;
+    margin: 0;
+}
+
+.welcome-subtitle {
+    font-size: 1rem; /* Más pequeño */
+    color: #667eea;
+    font-weight: normal;
+}
+
+/* Caja de Búsqueda */
+.search-box {
+    position: relative;
+    width: 300px;
+        background-color:  rgb(177, 0, 241);
+
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #667eea;
+
+}
+
+.search-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+/* ============================================== */
+/* BOTONES DE ACCIÓN */
+/* ============================================== */
+.action-buttons-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+    
+}
+
+.btn-google {
+    background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+}
+
+/* ============================================== */
+/* TÍTULOS DE SECCIÓN */
+/* ============================================== */
+.section-title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* ============================================== */
+/* GRID DE PRESENTACIONES VACÍO */
+/* ============================================== */
+.presentation-grid-empty {
+    background: white;
+    border-radius: 10px;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.empty-state {
+    color: #6c757d;
+}
+
+.empty-state i {
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+/* ============================================== */
+/* GRID DE UTILIDADES */
+/* ============================================== */
+.utility-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.utility-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.utility-btn {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.utility-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.utility-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* ============================================== */
+/* RESPONSIVE DESIGN */
+/* ============================================== */
+@media (max-width: 1200px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    
+    .sidebar-slidemotion {
+        width: 100%;
+        min-height: auto;
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .welcome-section {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .search-box {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .action-buttons-group {
+        justify-content: center;
+    }
+    
+    .view-padding {
+        padding: 1rem;
+    }
+}
+
+/* Utilidades adicionales */
+.mt-2 { margin-top: 0.5rem; }
+.pt-6 { padding-top: 1.5rem; }
+.border-top { border-top: 1px solid #dee2e6; }
+.about {
+    padding: 4rem 2rem;
+    text-align: center;
+
+}
+
+.about-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.about h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.about p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+/* Call to Action Section */
+.cta {
+    background: #333;
+    color: white;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.cta h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.cta p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+/* Navigation adjustments for home */
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* Statistics Section */
+.stats {
+    padding: 3rem 2rem;
+    background: #667eea;
+    color: white;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.stat-item h3 {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-item p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 2.5rem;
+        
+    }
+    
+    .hero-content p {
+        font-size: 1rem;
+    }
+    
+    .btn {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+    }
+    
+    .features-grid,
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .about h2,
+    .cta h2 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        min-height: 60vh;
+        padding: 1rem;
+    }
+    
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .btn {
+        display: block;
+        margin: 0.5rem auto;
+        width: 80%;
+        max-width: 250px;
+    }
+}
