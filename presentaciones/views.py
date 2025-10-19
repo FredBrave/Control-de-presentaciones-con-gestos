@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm
 from django.contrib.auth import get_user_model
 from google.oauth2 import service_account
+from django.core.files import File
 from .google_drive_oauth import get_or_create_user_folder, upload_to_drive
 from googleapiclient.discovery import build
 import tempfile
@@ -110,6 +111,8 @@ def uploadPage(request):
         if form.is_valid():
             user = request.user
             file = form.cleaned_data['archivo']
+            titulo = form.cleaned_data['titulo']
+            ubicacion = form.cleaned_data['ubicacion']
             filename = file.name
             ext = os.path.splitext(filename)[1].lower()
 
@@ -128,54 +131,93 @@ def uploadPage(request):
 
                 if ext == '.pptx':
                     if os.name != 'nt':
-                        raise NotImplementedError("Conversión PPTX→PDF solo compatible con Windows.")
+                        messages.error(request, 'La conversión de PPTX a PDF solo está disponible en Windows.')
+                        return redirect('upload')
                     
-                    import comtypes.client
-                    pdf_path = tmp_path.replace('.pptx', '.pdf')
-                    powerpoint = comtypes.client.CreateObject("PowerPoint.Application")
                     try:
-                        presentation = powerpoint.Presentations.Open(tmp_path, WithWindow=False)
-                        presentation.SaveAs(pdf_path, 32)
-                        presentation.Close()
-                    finally:
-                        powerpoint.Quit()
+                        import comtypes.client
+                        pdf_path = tmp_path.replace('.pptx', '.pdf')
+                        powerpoint = comtypes.client.CreateObject("PowerPoint.Application")
+                        powerpoint.Visible = 0
+                        
+                        try:
+                            presentation = powerpoint.Presentations.Open(tmp_path, WithWindow=False)
+                            presentation.SaveAs(pdf_path, 32)
+                            presentation.Close()
+                        finally:
+                            powerpoint.Quit()
 
-                    upload_path = pdf_path
-                    upload_name = os.path.basename(pdf_path)
-                    mimetype = 'application/pdf'
+                        upload_path = pdf_path
+                        upload_name = filename.replace('.pptx', '.pdf')
+                        mimetype = 'application/pdf'
+                        
+                    except Exception as e:
+                        logger.error(f"Error al convertir PPTX: {e}")
+                        messages.error(request, 'Error al convertir el archivo PPTX a PDF.')
+                        return redirect('upload')
 
-                folder_id = get_or_create_user_folder(user)
-                if not folder_id:
-                    raise Exception("No se pudo obtener o crear la carpeta en Drive.")
+                if not upload_name.lower().endswith('.pdf'):
+                    messages.error(request, 'Solo se permiten archivos PDF o PPTX.')
+                    return redirect('upload')
 
-                datos_drive = upload_to_drive(upload_path, upload_name, folder_id)
+                if ubicacion == 'drive':
+                    
+                    folder_id = get_or_create_user_folder(user)
+                    if not folder_id:
+                        raise Exception("No se pudo obtener o crear la carpeta en Drive.")
 
-                presentacion = Presentacion.objects.create(
-                        usuario=request.user,
+                    datos_drive = upload_to_drive(upload_path, upload_name, folder_id)
+
+                    presentacion = Presentacion.objects.create(
+                        usuario=user,
                         nombre=datos_drive['name'],
+                        titulo=titulo,
                         drive_id=datos_drive['id'],
-                        enlace_drive=datos_drive['webView']
+                        enlace_drive=datos_drive.get('webViewLink', ''),
+                        ubicacion='drive'
                     )
-                presentacion.generar_miniatura()
+                    
+                    messages.success(request, f'✓ Presentación "{titulo}" subida correctamente a Google Drive.')
+                
+                else:
+                    presentacion = Presentacion.objects.create(
+                        usuario=user,
+                        nombre=upload_name,
+                        titulo=titulo,
+                        ubicacion='local'
+                    )
+                    
+                    with open(upload_path, 'rb') as f:
+                        presentacion.archivo_local.save(upload_name, File(f), save=False)
+                    
+                    messages.success(request, f'✓ Presentación "{titulo}" guardada correctamente en el servidor.')
+
+                try:
+                    presentacion.generar_miniatura()
+                except Exception as e:
+                    logger.warning(f"Error al generar miniatura: {e}")
+                
                 presentacion.save()
 
-                messages.success(request, 'Archivo subido correctamente a tu carpeta en Google Drive.')
+                return redirect('home')
 
             except Exception as e:
                 error_traceback = traceback.format_exc()
                 logger.error(f"Error durante la subida para {user.username}: {e}")
                 logger.error(error_traceback)
-                messages.error(request, 'Ocurrió un error al procesar tu archivo.')
+                messages.error(request, f'Ocurrió un error al procesar tu archivo: {str(e)}')
+                return redirect('upload')
 
             finally:
                 if tmp_path:
                     safe_remove(tmp_path)
-                if pdf_path:
+                if pdf_path and pdf_path != tmp_path:
                     safe_remove(pdf_path)
 
-            return redirect('home')
         else:
-            messages.error(request, 'Formulario inválido. Verifica los datos.')
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = UploadPresentationForm()
 

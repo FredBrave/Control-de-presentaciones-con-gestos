@@ -12,10 +12,27 @@ class UploadPresentationForm(forms.Form):
     titulo = forms.CharField(
         label="Título",
         max_length=255,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de la presentación'})
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Nombre de la presentación'
+        })
     )
     archivo = forms.FileField(
         label="Archivo",
         required=True,
-        widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': '.pdf,.pptx'})
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control', 
+            'accept': '.pdf,.pptx'
+        })
+    )
+    ubicacion = forms.ChoiceField(
+        label="Ubicación de almacenamiento",
+        choices=[
+            ('drive', 'Google Drive'),
+            ('local', 'Servidor Local')
+        ],
+        initial='drive',
+        required=True,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
     )

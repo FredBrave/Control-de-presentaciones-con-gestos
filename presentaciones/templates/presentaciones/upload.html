@@ -1,38 +1,143 @@
 {% extends 'presentaciones/base.html' %}
-{% block title %}Subir presentación{% endblock %}
+
+{% block title %}Subir Presentación{% endblock %}
 
 {% block content %}
-<h3>Subir presentación</h3>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-cloud-upload"></i> Subir Presentación
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="{{ form.titulo.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-pencil"></i> {{ form.titulo.label }}
+                            </label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}
+                                <div class="alert alert-danger mt-2 p-2">
+                                    {{ form.titulo.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Ingresa un nombre descriptivo para tu presentación
+                            </small>
+                        </div>
 
-    <!-- Campo de título -->
-    <div class="mb-3">
-        {{ form.titulo.label_tag }}
-        {{ form.titulo }}
-        {% if form.titulo.errors %}
-            <div class="text-danger">{{ form.titulo.errors }}</div>
-        {% endif %}
+                        <div class="mb-4">
+                            <label for="{{ form.archivo.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-pdf"></i> {{ form.archivo.label }}
+                            </label>
+                            {{ form.archivo }}
+                            {% if form.archivo.errors %}
+                                <div class="alert alert-danger mt-2 p-2">
+                                    {{ form.archivo.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Formatos permitidos: <strong>PDF</strong> o <strong>PPTX</strong> (max 50MB)
+                            </small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-geo-alt"></i> Ubicación de almacenamiento
+                            </label>
+                            
+                            <div class="border rounded p-3 bg-light">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="ubicacion" id="ubicacion_drive" value="drive" checked>
+                                    <label class="form-check-label" for="ubicacion_drive">
+                                        <strong><i class="bi bi-cloud text-primary"></i> Google Drive</strong>
+                                        <small class="d-block text-muted ms-4">
+                                            Los archivos se almacenarán en tu carpeta personal de Google Drive. 
+                                            Accesibles desde cualquier dispositivo.
+                                        </small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="ubicacion" id="ubicacion_local" value="local">
+                                    <label class="form-check-label" for="ubicacion_local">
+                                        <strong><i class="bi bi-hdd text-success"></i> Servidor Local</strong>
+                                        <small class="d-block text-muted ms-4">
+                                            Los archivos se guardarán en el servidor de la aplicación. 
+                                            Acceso más rápido y sin límites de almacenamiento.
+                                        </small>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            {% if form.ubicacion.errors %}
+                                <div class="alert alert-danger mt-2 p-2">
+                                    {{ form.ubicacion.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-upload"></i> Subir Presentación
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3" role="alert">
+                <i class="bi bi-info-circle"></i> 
+                <strong>Nota:</strong> Los archivos PPTX se convertirán automáticamente a PDF antes de ser almacenados.
+            </div>
+        </div>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label for="file_type">Tipo de archivo:</label>
-        <select id="file_type" class="form-control">
-            <option value="pdf">PDF</option>
-            <option value="pptx">PPTX</option>
-        </select>
-    </div>
+<style>
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .form-check-label {
+        cursor: pointer;
+        width: 100%;
+    }
+    
+    .form-check {
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.2s;
+    }
+    
+    .form-check:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+    }
+</style>
 
-    <!-- Campo de archivo -->
-    <div class="mb-3">
-        {{ form.archivo.label_tag }}
-        {{ form.archivo }}
-        {% if form.archivo.errors %}
-            <div class="text-danger">{{ form.archivo.errors }}</div>
-        {% endif %}
-    </div>
-
-    <button type="submit" class="btn btn-primary">Subir</button>
-</form>
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subiendo...';
+    });
+</script>
 {% endblock %}

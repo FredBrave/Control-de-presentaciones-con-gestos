@@ -21,14 +21,25 @@ class Usuario(AbstractUser):
     
 
 class Presentacion(models.Model):
+    UBICACION_CHOICES = [
+        ('drive', 'Google Drive'),
+        ('local', 'Servidor Local'),
+    ]
+    
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='presentaciones'
     )
     nombre = models.CharField(max_length=255)
-    drive_id = models.CharField(max_length=255)
-    enlace_drive = models.URLField()
+    titulo = models.CharField(max_length=255, blank=True, null=True)
+    
+    drive_id = models.CharField(max_length=255, blank=True, null=True)
+    enlace_drive = models.URLField(blank=True, null=True)
+    
+    archivo_local = models.FileField(upload_to='presentaciones/%Y/%m/', blank=True, null=True)
+    ubicacion = models.CharField(max_length=10, choices=UBICACION_CHOICES, default='drive')
+    
     miniatura = models.ImageField(upload_to='miniaturas/', blank=True, null=True)
     miniatura_url = models.URLField(blank=True, null=True)
     fecha_subida = models.DateTimeField(auto_now_add=True)
@@ -36,27 +47,45 @@ class Presentacion(models.Model):
     class Meta:
         ordering = ['-fecha_subida']
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.nombre} ({self.usuario})"
 
+    def get_archivo_path(self):
+        if self.ubicacion == 'local' and self.archivo_local:
+            return self.archivo_local.path
+        return None
+
     def generar_miniatura(self):
-        if self.miniatura_url:
+        if self.miniatura_url or self.miniatura:
             return
         
         try:
-            service = get_drive_service()
-
-            request = service.files().get_media(fileId=self.drive_id)
-            pdf_path = os.path.join(tempfile.gettempdir(), f"temp_{self.id}.pdf")
-
-            with open(pdf_path, 'wb') as f:
-                downloader = service._http.request(request.uri)[1]
-                f.write(downloader)
+            pdf_path = None
+            temp_file = False
+            
+            if self.ubicacion == 'drive' and self.drive_id:
+                service = get_drive_service()
+                request = service.files().get_media(fileId=self.drive_id)
+                pdf_path = os.path.join(tempfile.gettempdir(), f"temp_{self.id}.pdf")
+                
+                with open(pdf_path, 'wb') as f:
+                    downloader = service._http.request(request.uri)[1]
+                    f.write(downloader)
+                temp_file = True
+                
+            elif self.ubicacion == 'local' and self.archivo_local:
+                pdf_path = self.archivo_local.path
+                temp_file = False
+            
+            if not pdf_path or not os.path.exists(pdf_path):
+                print(f"No se encontró el archivo PDF para generar miniatura")
+                return
 
             poppler_path = os.path.join(settings.BASE_DIR, 'requeridos', 'poppler', 'Library', 'bin')
             poppler_path = os.path.abspath(poppler_path)
 
             pages = convert_from_path(pdf_path, first_page=1, last_page=1, poppler_path=poppler_path)
+            
             if pages:
                 thumb_io = BytesIO()
                 
@@ -89,7 +118,10 @@ class Presentacion(models.Model):
                     save=False
                 )
 
-            os.remove(pdf_path)
+            if temp_file and os.path.exists(pdf_path):
+                os.remove(pdf_path)
 
         except Exception as e:
             print(f"Error generando miniatura: {e}")
+            import traceback
+            traceback.print_exc()
