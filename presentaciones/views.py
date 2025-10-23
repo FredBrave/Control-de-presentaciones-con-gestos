@@ -1,29 +1,13 @@
-<<<<<<< HEAD
-from django.shortcuts import render, redirect
-import os
-import traceback
-import logging
-=======
 from django.shortcuts import render, redirect, get_object_or_404
 import os, cv2
 import traceback
 import logging
 from django.core.files import File
->>>>>>> cda8f2e (RF-11: Presentacion con gestos. Gesto zoom con puntero)
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm
 from django.contrib.auth import get_user_model
 from google.oauth2 import service_account
-<<<<<<< HEAD
-from django.core.files import File
-from .google_drive_oauth import get_or_create_user_folder, upload_to_drive
-from googleapiclient.discovery import build
-import tempfile
-from googleapiclient.errors import HttpError
-from django.urls import reverse
-import time
-=======
 from .google_drive_oauth import get_or_create_user_folder, upload_to_drive
 from googleapiclient.discovery import build
 import tempfile
@@ -31,7 +15,6 @@ from django.http import JsonResponse
 from django.urls import reverse
 from CPG import settings
 import time, subprocess, threading
->>>>>>> cda8f2e (RF-11: Presentacion con gestos. Gesto zoom con puntero)
 from .models import Presentacion
 from django.contrib.auth.decorators import login_required
 from .forms import UploadPresentationForm
@@ -258,7 +241,7 @@ def uploadPage(request):
 
 @login_required
 def import_from_google_slides(request):
-    redirect_uri = request.build_absolute_uri(reverse('oauth2callback'))
+    redirect_uri = request.build_absolute_uri(reverse('presentaciones:oauth2callback'))
     
     try:
         authorization_url, state = get_authorization_url(redirect_uri)
@@ -287,7 +270,7 @@ def oauth2callback(request):
         return redirect('presentaciones:home')
     
     try:
-        redirect_uri = request.build_absolute_uri(reverse('oauth2callback'))
+        redirect_uri = request.build_absolute_uri(reverse('presentaciones:oauth2callback'))
         credentials_dict = get_credentials_from_code(code, state, redirect_uri)
         
         request.session['google_credentials'] = credentials_dict

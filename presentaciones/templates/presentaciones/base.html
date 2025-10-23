@@ -33,7 +33,6 @@
                     <div class="user-pill">
                         <i class="fas fa-user-circle mr-1"></i> {{ user.username }}
                     </div>
-
                     <form method="post" action="{% url 'presentaciones:logout' %}">
                         {% csrf_token %}
                         <button type="submit" class="logout-btn">

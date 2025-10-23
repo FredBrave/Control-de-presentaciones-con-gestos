@@ -34,7 +34,7 @@
                 {% endfor %}
             </ul>
             {% endif %}
-            <form action="{% url 'register' %}" method="POST" class="register-form">
+            <form action="{% url 'presentaciones:register' %}" method="POST" class="register-form">
                 {% csrf_token %}
                 
                 <div class="form-group">
@@ -58,7 +58,7 @@
                 <button type="submit" class="btn-register">Crear Cuenta</button>
                 
                 <div class="auth-footer">
-                    <p>¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+                    <p>¿Ya tienes una cuenta? <a href="{% url 'presentaciones:login' %}">Inicia sesión aquí</a></p>
                 </div>
             </form>
         </div>

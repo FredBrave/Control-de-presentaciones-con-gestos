@@ -1,70 +1,148 @@
 {% extends 'presentaciones/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/select_presentacion.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Importar Presentaciones de Google Slides</h2>
-    <p class="text-muted">Selecciona las presentaciones que deseas importar</p>
+<div class="import-container">
+    <div class="import-header">
+        <h2><i class="fas fa-cloud-download-alt"></i> Importar Presentaciones de Google Slides</h2>
+        <p>Selecciona las presentaciones que deseas importar a SLIDEMOTION</p>
+    </div>
 
-    <form method="post" action="{% url 'import_selected_presentations' %}">
+    <form method="post" action="{% url 'presentaciones:import_selected_presentations' %}" id="importForm">
         {% csrf_token %}
         
         {% if presentations %}
-            <div class="row">
-                {% for presentation in presentations %}
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        {% if presentation.thumbnailLink %}
-                        <img src="{{ presentation.thumbnailLink }}" class="card-img-top" alt="{{ presentation.name }}">
-                        {% else %}
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="fas fa-file-powerpoint fa-3x text-muted"></i>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="card-body">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       name="presentations" 
-                                       value="{{ presentation.id }}" 
-                                       id="pres_{{ presentation.id }}">
-                                <label class="form-check-label" for="pres_{{ presentation.id }}">
-                                    <h6 class="card-title">{{ presentation.name }}</h6>
-                                </label>
-                            </div>
-                            <small class="text-muted">
-                                Modificado: {{ presentation.modifiedTime|date:"d/m/Y" }}
-                            </small>
-                        </div>
+            <div class="selection-controls">
+                <div class="selection-info">
+                    <div class="selection-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="selectedCount">0</span> seleccionadas
                     </div>
                 </div>
+                <button type="button" class="btn-toggle-all" onclick="toggleAll()">
+                    <i class="fas fa-check-double"></i>
+                    <span id="toggleText">Seleccionar todas</span>
+                </button>
+            </div>
+
+            <div class="presentations-grid">
+                {% for presentation in presentations %}
+                <label class="presentation-card" for="pres_{{ presentation.id }}" data-card>
+                    
+                    {% if presentation.thumbnailLink %}
+                    <img src="{{ presentation.thumbnailLink }}" 
+                         class="card-thumbnail" 
+                         alt="{{ presentation.name }}"
+                         loading="lazy">
+                    {% else %}
+                    <div class="card-thumbnail-placeholder">
+                        <i class="fas fa-file-powerpoint"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <div class="card-checkbox-wrapper">
+                            <div class="custom-checkbox">
+                                <input type="checkbox" 
+                                       name="presentations" 
+                                       value="{{ presentation.id }}" 
+                                       id="pres_{{ presentation.id }}"
+                                       onchange="updateCount()">
+                                <span class="checkbox-display"></span>
+                            </div>
+                            <div>
+                                <h6 class="card-title">{{ presentation.name }}</h6>
+                                <div class="card-metadata">
+                                    <i class="far fa-clock"></i>
+                                    <small>{{ presentation.modifiedTime|date:"d/m/Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </label>
                 {% endfor %}
             </div>
 
-            <div class="mt-4">
-                <button type="button" class="btn btn-secondary" onclick="toggleAll()">
-                    Seleccionar todas
-                </button>
-                <button type="submit" class="btn btn-primary">
+            <div class="action-buttons">
+                <button type="submit" class="btn-action btn-primary" id="submitBtn" disabled>
+                    <i class="fas fa-download"></i>
                     Importar seleccionadas
                 </button>
-                <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                <a href="{% url 'presentaciones:home' %}" class="btn-action btn-outline">
+                    <i class="fas fa-times"></i>
                     Cancelar
                 </a>
             </div>
         {% else %}
-            <div class="alert alert-info">
-                No se encontraron presentaciones en tu cuenta de Google.
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <h3>No se encontraron presentaciones</h3>
+                <p>No hay presentaciones disponibles en tu cuenta de Google Drive</p>
+                <a href="{% url 'presentaciones:home' %}" class="btn-action btn-primary">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al inicio
+                </a>
             </div>
-            <a href="{% url 'home' %}" class="btn btn-primary">Volver al inicio</a>
         {% endif %}
     </form>
 </div>
 
 <script>
+function updateCount() {
+    const checkboxes = document.querySelectorAll('input[name="presentations"]');
+    const checked = Array.from(checkboxes).filter(cb => cb.checked);
+    const count = checked.length;
+    
+    document.getElementById('selectedCount').textContent = count;
+    
+    checkboxes.forEach(cb => {
+        const card = cb.closest('.presentation-card');
+        if (cb.checked) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+    });
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = count === 0;
+    
+    const allChecked = count === checkboxes.length;
+    const toggleText = document.getElementById('toggleText');
+    toggleText.textContent = allChecked ? 'Deseleccionar todas' : 'Seleccionar todas';
+}
+
 function toggleAll() {
     const checkboxes = document.querySelectorAll('input[name="presentations"]');
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    checkboxes.forEach(cb => cb.checked = !allChecked);
+    
+    checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+    });
+    
+    updateCount();
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('[data-card]');
+    
+    cards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.type === 'checkbox') return;
+            
+            const checkbox = this.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateCount();
+        });
+    });
+    
+    updateCount();
+});
 </script>
 {% endblock %}
