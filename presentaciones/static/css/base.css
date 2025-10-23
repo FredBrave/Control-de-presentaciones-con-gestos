@@ -1,10 +1,10 @@
-/* Variables de Color (Corregidas para SLIDEMOTION) */
+
 :root {
-    --color-primary: #000000; /* Morado Principal */
-    --color-secondary: #f7f7f7f3; /* Rosa/Magenta (Botones) */
-    --color-link: #8404d3; /* Morado Oscuro */
-    --color-header-start: #9920e4; /* Degradado inicio (Rosa) */
-    --color-header-end: #7B1FA2; /* Degradado fin (Morado más oscuro) */
+    --color-primary: #000000;
+    --color-secondary: #f7f7f7f3;
+    --color-link: #8404d3;
+    --color-header-start: #9920e4;
+    --color-header-end: #7B1FA2; 
     --color-text-dark: #1F2937;
     --color-off-white: #ffffff;
     --color-light-gray: #F3F4F6;
@@ -14,10 +14,10 @@ body {
     font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: var(--color-light-gray); /* Fondo general de la página */
+    background-color: var(--color-light-gray);
 }
 
-/* --- Base Layout para Footer Fijo --- */
+
 
 .base-container {
     display: flex;
@@ -26,22 +26,19 @@ body {
 }
 
 .content-area {
-    flex: 1; /* Esto hace que el área de contenido ocupe todo el espacio restante */
+    flex: 1;
     width: 100%;
-    padding-top: 64px; /* Espacio para el header fijo */
+    padding-top: 64px;
     box-sizing: border-box;
 }
 
-/* --- Main Content Container (Contenido Dinámico) --- */
 .main-content {
-    flex: 1; /* Ocupa todo el espacio entre header y footer */
+    flex: 1;
     width: 100%;
-    /* SIN padding-top - cada página maneja su propio espaciado */
     box-sizing: border-box;
-    min-height: calc(100vh - 64px - 120px); /* Altura mínima considerando header y footer */
+    min-height: calc(100vh - 64px - 120px);
 }
 
-/* Placeholder para el contenido de la página */
 .placeholder-section {
     padding: 2rem;
     max-width: 1200px;
@@ -52,7 +49,6 @@ body {
     text-align: center;
 }
 
-/* --- 1. HEADER (BARRA PRINCIPAL) --- */
 
 .header-slidemotion {
     position: fixed;
@@ -65,7 +61,6 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 1.5rem;
-    /* Degradado del Header con los colores corregidos */
     background: linear-gradient(to right, var(--color-header-start) 0%, var(--color-header-end) 100%);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -140,7 +135,7 @@ body {
 .auth-controls {
     display: flex;
     gap: 0.75rem;
-    margin-left: -0.5rem; /* Mueve los botones un poco a la izquierda */
+    margin-left: -0.5rem;
 }
 
 .auth-btn {
@@ -157,13 +152,13 @@ body {
     background-color: var(--color-off-white);
     color: var(--color-primary);
     border: 2px solid var(--color-primary);
-    margin-right: 10px; /* Mueve el botón un poco a la izquierda */
+    margin-right: 10px;
 }
 
 .auth-btn-login:hover {
     background-color: var(--color-light-gray);
     color: var(--color-link);
-    margin-right: 10px; /* Mueve el botón un poco a la izquierda */
+    margin-right: 10px; 
 
 }
 
@@ -171,7 +166,7 @@ body {
     background-color: var(--color-secondary);
     color: var(--color-off-black);
     border: 2px solid var(--color-secondary);
-    margin-right: 40px; /* Mueve el botón un poco a la izquierda */
+    margin-right: 40px; 
 
 }
 
@@ -180,10 +175,9 @@ body {
     border-color: var(--color-link);
 }
 
-/* --- 3. FOOTER --- */
 
 .main-footer {
-    background-color: var(--color-link); /* Morado Oscuro */
+    background-color: var(--color-link);
     color: var(--color-off-white);
     padding: 2rem 0 0;
     font-size: 0.9rem;
@@ -206,7 +200,7 @@ body {
 
 .footer-description h3 {
     font-size: 1.2rem;
-    color: var(--color-secondary); /* Resaltar SLIDEMOTION */
+    color: var(--color-secondary);
     margin-top: 0;
     margin-bottom: 0.75rem;
 }
@@ -246,7 +240,6 @@ body {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Media Query para Responsividad */
 @media (max-width: 600px) {
     .header-slidemotion {
         padding: 0 1rem;

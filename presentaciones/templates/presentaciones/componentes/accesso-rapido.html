@@ -1,8 +1,6 @@
-<!-- COMPONENTE: ACCESO RÁPIDO - SIDEBAR -->
 <div class="quick-access">
     <h3 class="sidebar-title">Acceso Rápido:</h3>
     <nav class="nav-menu">
-        <!-- Botones de Navegación (Usamos 'dash-btn-active' para página actual) -->
 
         <a href="{% url 'presentaciones:home' %}" class="dash-btn {% if current_page == 'home' %}dash-btn-active{% endif %}">
             <i class="fas fa-home"></i> Inicio

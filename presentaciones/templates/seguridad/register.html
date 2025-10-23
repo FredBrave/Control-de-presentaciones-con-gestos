@@ -10,17 +10,14 @@
 {% block content %}
 
 <div class="auth-container">
-    <!-- Mitad Izquierda: Branding e Ilustración -->
     <div class="auth-visual-side">
         <div class="branding-content">
             <div class="illustration-circle">
-                <!-- Placeholder de imagen: Reemplazar con el path de tu imagen de ilustración -->
                 <img src="{% static 'img/logo2.png' %}" alt="Ilustración de control de gestos" onerror="this.src='https://placehold.co/200x200/FFFFFF/7A30C0?text=IMAGEN+PRINCIPAL'">
             </div>
         </div>
     </div>
 
-    <!-- Mitad Derecha: Formulario de Registro -->
     <div class="auth-form-side">
         <div class="form-card">
             <h1 class="logo-title-auth">SLIDEMOTION</h1>
@@ -66,7 +63,6 @@
 </div>
 
 <script>
-    // Script para el toggle de contraseña
     document.addEventListener('DOMContentLoaded', function() {
         const passwordToggle = document.getElementById('password-toggle');
         

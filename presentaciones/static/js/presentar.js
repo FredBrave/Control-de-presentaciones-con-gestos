@@ -1,17 +1,10 @@
-// visor.js - JavaScript adaptado para Django
 
-// ===========================
-// CONFIGURACIÓN INICIAL
-// ===========================
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js';
 
-// URL del PDF - Se obtiene desde el template de Django
 const url = typeof PDF_URL !== 'undefined' ? PDF_URL : '';
 const comandoGestoUrl = typeof COMANDO_GESTO_URL !== 'undefined' ? COMANDO_GESTO_URL : '/presentaciones/comando_gesto/';
 
-// ===========================
-// VARIABLES DE ESTADO
-// ===========================
+
 let pdfDoc = null;
 let currentPage = 1;
 let baseScale = 1.5;
@@ -21,7 +14,6 @@ let pointerY = 0.5;
 let isPointerActive = false;
 let currentMode = 'navigation';
 
-// Variables del sistema de dibujo
 let drawingMode = false;
 let isDrawing = false;
 let isErasing = false;
@@ -29,7 +21,6 @@ let drawingPath = [];
 let drawingPaths = new Map();
 let currentStroke = null;
 
-// Variables para mover el dibujo
 let isMoving = false;
 let moveStartX = 0;
 let moveStartY = 0;
@@ -37,9 +28,6 @@ let moveOffsetX = 0;
 let moveOffsetY = 0;
 
 
-// ===========================
-// REFERENCIAS DEL DOM
-// ===========================
 const canvas = document.getElementById("pdf-canvas");
 const drawingCanvas = document.getElementById("drawing-canvas");
 const ctx = canvas.getContext("2d");
@@ -63,9 +51,6 @@ const drawingControls = document.getElementById("drawing-controls");
 const toggleDrawingButton = document.getElementById("toggle-drawing");
 const clearDrawingsButton = document.getElementById("clear-drawings");
 
-// ===========================
-// FUNCIONES DE INDICADORES
-// ===========================
 
 const updateModeIndicator = (mode) => {
     currentMode = mode;
@@ -118,9 +103,6 @@ const updateZoomDisplay = () => {
     zoomIndicator.textContent = `${zoomPercentage}%`;
 };
 
-// ===========================
-// FUNCIONES DEL PUNTERO
-// ===========================
 
 const updatePointer = (x, y, active = true, mode = 'pointer') => {
     pointerX = Math.max(0, Math.min(1, x));
@@ -153,9 +135,7 @@ const updatePointer = (x, y, active = true, mode = 'pointer') => {
     }
 };
 
-// ===========================
-// FUNCIONES DE DIBUJO
-// ===========================
+
 
 const initializeDrawingCanvas = () => {
     drawingCanvas.width = canvas.width;
@@ -175,7 +155,6 @@ const initializeDrawingCanvas = () => {
 const redrawCanvas = () => {
     drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
 
-    // Solo aplicar transformación temporal si estamos moviendo
     if (isMoving) {
         drawingCtx.save();
         const pixelOffsetX = moveOffsetX * drawingCanvas.width;
@@ -214,7 +193,6 @@ const redrawCanvas = () => {
         });
     }
     
-    // Restaurar transformación solo si se aplicó
     if (isMoving) {
         drawingCtx.restore();
     }
@@ -228,7 +206,6 @@ const redrawCanvas = () => {
 const startDrawing = (x, y) => {
     if (!drawingMode) return;
     
-    // AÑADIDO: Asegurarse de detener el modo de borrado antes de dibujar.
     if (isErasing) {
         stopErasing();
     }
@@ -248,7 +225,6 @@ const addDrawingPoint = (x, y) => {
     if (!drawingMode || !isDrawing || !currentStroke) return;
     currentStroke.points.push({ x, y });
     
-    // Se eliminan las configuraciones de contexto de aquí para que sea más eficiente
     drawingCtx.strokeStyle = currentStroke.color;
     drawingCtx.lineWidth = currentStroke.width;
     drawingCtx.beginPath();
@@ -265,20 +241,18 @@ const stopDrawing = () => {
     if (!drawingMode || !isDrawing || !currentStroke) return;
     isDrawing = false;
     
-    if (currentStroke.points.length > 1) { // Guardar solo si hay más de un punto
+    if (currentStroke.points.length > 1) {
         if (!drawingPaths.has(currentPage)) {
             drawingPaths.set(currentPage, []);
         }
         drawingPaths.get(currentPage).push(currentStroke);
     }
     currentStroke = null;
-    // No es necesario cambiar globalCompositeOperation aquí, porque 'source-over' es el estado deseado.
 };
 
 const startErasing = (x, y) => {
     if (!drawingMode) return;
 
-    // AÑADIDO: Asegurarse de detener el modo de dibujo antes de borrar.
     if (isDrawing) {
         stopDrawing();
     }
@@ -288,7 +262,7 @@ const startErasing = (x, y) => {
     currentStroke = {
         type: 'erase',
         points: [{ x, y }],
-        width: 50 // <-- TAMAÑO DEL BORRADOR AUMENTADO
+        width: 50
     };
     updateModeIndicator('erasing');
 };
@@ -296,7 +270,6 @@ const addErasePoint = (x, y) => {
     if (!drawingMode || !isErasing || !currentStroke) return;
     currentStroke.points.push({ x, y });
     
-    // Se eliminan las configuraciones de contexto de aquí
     drawingCtx.lineWidth = currentStroke.width;
     drawingCtx.beginPath();
     
@@ -307,31 +280,25 @@ const addErasePoint = (x, y) => {
         drawingCtx.lineTo(curr.x * drawingCanvas.width, curr.y * drawingCanvas.height);
         drawingCtx.stroke();
     }
-    // ELIMINADO: Ya no se revierte el estado aquí
-    // drawingCtx.globalCompositeOperation = 'source-over'; 
 };
 const stopErasing = () => {
     if (!drawingMode || !isErasing || !currentStroke) return;
     isErasing = false;
     
-    if (currentStroke.points.length > 1) { // Guardar solo si hay más de un punto
+    if (currentStroke.points.length > 1) {
         if (!drawingPaths.has(currentPage)) {
             drawingPaths.set(currentPage, []);
         }
         drawingPaths.get(currentPage).push(currentStroke);
     }
     currentStroke = null;
-    drawingCtx.globalCompositeOperation = 'source-over'; // <-- AÑADIDO: Restablecer modo al finalizar
+    drawingCtx.globalCompositeOperation = 'source-over';
 };
 
 const clearPageDrawings = () => {
     drawingPaths.delete(currentPage);
     drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
 };
-
-// ===========================
-// FUNCIONES DEL PDF
-// ===========================
 
 const calculateAndSetBaseScale = async () => {
     if (!pdfDoc) return;
@@ -401,9 +368,6 @@ const loadPdf = async () => {
     }
 };
 
-// ===========================
-// FUNCIONES DE NAVEGACIÓN
-// ===========================
 
 const goToPrevPage = () => {
     if (currentPage > 1) renderPage(currentPage - 1);
@@ -413,9 +377,6 @@ const goToNextPage = () => {
     if (currentPage < pdfDoc.numPages) renderPage(currentPage + 1);
 };
 
-// ===========================
-// FUNCIONES DE ZOOM
-// ===========================
 
 const zoomIn = () => setGestureZoom(gestureZoom + 0.2);
 const zoomOut = () => setGestureZoom(gestureZoom - 0.2);
@@ -450,9 +411,6 @@ const setGestureZoom = async (zoomLevel, centerX = pointerX, centerY = pointerY)
     lastCommandDisplay.textContent = `Zoom: ${Math.round(gestureZoom * 100)}% en punto (${(centerX * 100).toFixed(1)}%, ${(centerY * 100).toFixed(1)}%)`;
 };
 
-// ===========================
-// EVENT LISTENERS
-// ===========================
 
 if (prevButton) prevButton.addEventListener("click", goToPrevPage);
 if (nextButton) nextButton.addEventListener("click", goToNextPage);
@@ -503,9 +461,6 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-// ===========================
-// SISTEMA DE COOLDOWNS
-// ===========================
 
 const clientCooldowns = {
     next: { last: 0, duration: 2000 },
@@ -544,14 +499,10 @@ const getRemainingCooldown = (commandType) => {
     return Math.max(0, cooldown.duration - timePassed);
 };
 
-// ===========================
-// PROCESAMIENTO DE COMANDOS
-// ===========================
 
 const processCommand = (comando) => {
     const currentTime = Date.now();
     
-    // Comandos de navegación
     if (comando === "next") {
         if (canProcessCommand('next')) {
             goToNextPage();
@@ -573,7 +524,6 @@ const processCommand = (comando) => {
         }
     } 
     
-    // Toggle modo dibujo
     else if (comando === "toggle_draw_mode") {
         if (canProcessCommand('toggle_draw_mode')) {
             updateDrawingModeIndicator(!drawingMode);
@@ -584,7 +534,6 @@ const processCommand = (comando) => {
         }
     }
     
-    // Comandos del puntero
     else if (comando.startsWith("puntero_")) {
         if (canProcessCommand('puntero')) {
             const parts = comando.split("_");
@@ -599,7 +548,6 @@ const processCommand = (comando) => {
         }
     }
     
-    // Comandos de dibujo
     else if (comando.startsWith("start_draw_")) {
         if (canProcessCommand('start_draw')) {
             const parts = comando.split("_");
@@ -641,7 +589,6 @@ const processCommand = (comando) => {
         }
     }
     
-    // Comandos de borrado
     else if (comando.startsWith("start_erase_")) {
         if (canProcessCommand('start_erase')) {
             const parts = comando.split("_");
@@ -684,14 +631,13 @@ const processCommand = (comando) => {
     }
     
     else if (comando === "clear_drawings") {
-        if (canProcessCommand('clear_drawings')) { // Opcional: añadir cooldown aquí también
+        if (canProcessCommand('clear_drawings')) {
             clearPageDrawings();
             lastCommandDisplay.textContent = "✓ Dibujos limpiados";
-            updateModeIndicator('pointer'); // Volver al modo puntero por defecto
+            updateModeIndicator('pointer');
         }
     }
     
-    // Comandos de zoom
     else if (comando.startsWith("zoom_")) {
         if (canProcessCommand('zoom')) {
             const parts = comando.split("_");
@@ -713,7 +659,6 @@ const processCommand = (comando) => {
         
     }
 
-    // !! NUEVOS BLOQUES: Comandos para mover el dibujo
     else if (comando.startsWith("start_move_")) {
         const parts = comando.split("_");
         isMoving = true;
@@ -721,26 +666,24 @@ const processCommand = (comando) => {
         moveStartY = parseFloat(parts[3]);
         moveOffsetX = 0;
         moveOffsetY = 0;
-        updateModeIndicator('moving'); // Puedes crear un nuevo estilo para este modo
+        updateModeIndicator('moving');
         lastCommandDisplay.textContent = "👌 Agarrando dibujo...";
     }
     else if (comando.startsWith("moving_")) {
-        if (!isMoving) return; // Ignorar si no hemos empezado a mover
+        if (!isMoving) return;
         const parts = comando.split("_");
         const currentX = parseFloat(parts[1]);
         const currentY = parseFloat(parts[2]);
         
-        // Calcular el desplazamiento desde el punto inicial
         moveOffsetX = currentX - moveStartX;
         moveOffsetY = currentY - moveStartY;
         
-        redrawCanvas(); // Redibujar con el desplazamiento temporal
+        redrawCanvas();
         lastCommandDisplay.textContent = `Moviendo: dx=${(moveOffsetX*100).toFixed(1)}%, dy=${(moveOffsetY*100).toFixed(1)}%`;
     }
     else if (comando === "stop_move") {
         if (!isMoving) return;
         
-        // Aplicar el desplazamiento final de forma permanente a los datos de los trazos
         const pageDrawings = drawingPaths.get(currentPage);
         if (pageDrawings) {
             pageDrawings.forEach(path => {
@@ -751,12 +694,11 @@ const processCommand = (comando) => {
             });
         }
         
-        // Resetear el estado de movimiento
         isMoving = false;
         moveOffsetX = 0;
         moveOffsetY = 0;
         
-        redrawCanvas(); // Redibujar una última vez con las coordenadas permanentes
+        redrawCanvas();
         updateModeIndicator('pointer');
         lastCommandDisplay.textContent = "✓ Dibujo movido";
     }
@@ -764,14 +706,10 @@ const processCommand = (comando) => {
     return currentTime;
 };
 
-// ===========================
-// POLLING DEL BACKEND (DJANGO)
-// ===========================
 
 let lastCommandTime = Date.now();
 let consecutiveErrors = 0;
 
-// Función principal de polling
 const startPolling = () => {
     setInterval(async () => {
         try {
@@ -800,7 +738,6 @@ const startPolling = () => {
                 if (comando && comando.trim() !== '') {
                     lastCommandTime = processCommand(comando);
                 } else {
-                    // Si no hay comando y ha pasado tiempo, volver a navegación
                     if ((currentMode === 'zoom' || currentMode === 'drawing' || currentMode === 'erasing') && 
                         Date.now() - lastCommandTime > 2000) {
                         updateModeIndicator('navigation');
@@ -808,20 +745,17 @@ const startPolling = () => {
                 }
             } else {
                 console.error("Error del servidor:", res.status);
-                lastCommandDisplay.textContent = `⚠️ Error servidor: ${res.status}`;
+                lastCommandDisplay.textContent = `Error servidor: ${res.status}`;
             }
         } catch (err) {
             if (consecutiveErrors <= 5) {
                 console.error("Error al obtener comando:", err);
-                lastCommandDisplay.textContent = "⚠️ Error de conexión";
+                lastCommandDisplay.textContent = "Error de conexión";
             }
         }
-    }, 100); // Polling cada 100ms
+    }, 100);
 };
 
-// ===========================
-// MANEJO DE EVENTOS GLOBALES
-// ===========================
 
 const handleResize = async () => {
     if (pdfDoc && currentPage) {
@@ -836,16 +770,12 @@ document.addEventListener('wheel', (e) => {
 
 window.addEventListener('resize', handleResize);
 
-// ===========================
-// INICIALIZACIÓN
-// ===========================
 
 window.addEventListener('DOMContentLoaded', () => {
     console.log('Inicializando visor de presentaciones...');
     console.log('PDF URL:', url);
     console.log('Comando Gesto URL:', comandoGestoUrl);
     
-    // Validar que tenemos una URL de PDF
     if (!url || url === '') {
         console.error('No se proporcionó URL del PDF');
         errorMessage.textContent = 'Error: No se proporcionó un archivo PDF';
@@ -853,13 +783,11 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    // Cargar PDF y configurar estado inicial
     loadPdf();
     updateModeIndicator('navigation');
     updateDrawingModeIndicator(false);
     updatePointer(0.5, 0.5, false);
     
-    // Iniciar polling del backend
     startPolling();
     
     console.log('Visor inicializado correctamente');
@@ -867,10 +795,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-// Reiniciar detector manualmente
 document.getElementById('restart-detector')?.addEventListener('click', async () => {
     try {
-        // Detener detector actual
         await fetch('/presentaciones/detector/detener/', {
             method: 'POST',
             headers: {
@@ -878,10 +804,8 @@ document.getElementById('restart-detector')?.addEventListener('click', async () 
             }
         });
         
-        // Esperar un momento
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Iniciar nuevamente
         const response = await fetch('/presentaciones/detector/iniciar/', {
             method: 'POST',
             headers: {
@@ -903,7 +827,6 @@ document.getElementById('restart-detector')?.addEventListener('click', async () 
     }
 });
 
-// Función helper para obtener CSRF token
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -921,13 +844,10 @@ function getCookie(name) {
 
 
 
-// Cerrar detector al salir de la página
 window.addEventListener('beforeunload', async (e) => {
-    // Intentar detener el detector
     navigator.sendBeacon('/presentaciones/detector/detener/');
 });
 
-// También cerrar al presionar ESC
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         if (confirm('¿Deseas cerrar la presentación y detener el detector?')) {

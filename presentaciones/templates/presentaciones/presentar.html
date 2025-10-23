@@ -6,22 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visor de Presentación - {{ presentacion.titulo }}</title>
     
-    <!-- PDF.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Custom Styles -->
     <link rel="stylesheet" href="{% static 'css/presentar.css' %}">
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
     <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-6xl">
-        <!-- Título -->
         <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">
             {{ presentacion.titulo }}
         </h1>
@@ -29,7 +24,6 @@
     {{ presentacion.titulo }}
     </h1>
 
-    <!-- ESTADO DEL DETECTOR (NUEVO) -->
     {% if detector_iniciado %}
     <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 mb-4 rounded">
         <div class="flex items-center">
@@ -50,20 +44,15 @@
     </div>
     {% endif %}
 
-        <!-- Barra de control -->
         <div class="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-2 lg:space-y-0">
-            <!-- Información de página y zoom -->
             <div class="flex flex-col items-center space-y-1">
                 <span id="page-info" class="text-lg font-medium text-gray-600">Cargando PDF...</span>
                 <span id="zoom-info" class="text-sm font-medium text-blue-600">Zoom: 100%</span>
             </div>
 
-            <!-- Último comando -->
             <span id="last-command" class="text-sm text-gray-400">Último comando: ninguno</span>
 
-            <!-- Botones de control -->
             <div class="flex flex-col space-y-2">
-                <!-- Navegación de páginas -->
                 <div class="space-x-2">
                     <button id="prev-page" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md hover:bg-gray-300 transition-colors disabled:opacity-50" disabled>
                         Anterior
@@ -73,7 +62,6 @@
                     </button>
                 </div>
                 
-                <!-- Controles de zoom -->
                 <div class="space-x-2 flex justify-center">
                     <button id="zoom-out" class="bg-blue-200 text-blue-800 font-semibold py-1 px-3 rounded-full text-sm hover:bg-blue-300 transition-colors">
                         -
@@ -86,7 +74,6 @@
                     </button>
                 </div>
                 
-                <!-- Controles de dibujo -->
                 <div class="drawing-controls" id="drawing-controls">
                     <button id="toggle-drawing" class="bg-green-500 text-white font-semibold py-1 px-3 rounded-full text-sm hover:bg-green-600 transition-colors">
                         Dibujo
@@ -98,19 +85,15 @@
             </div>
         </div>
 
-        <!-- Contenedor del PDF -->
         <div id="pdf-container" class="mb-4 scroll-smooth">
-            <!-- Indicadores de estado -->
             <div class="status-indicator" id="mode-indicator">NAVEGACIÓN</div>
             <div class="drawing-mode-indicator" id="drawing-mode-indicator">MODO DIBUJO: OFF</div>
             <div class="zoom-indicator" id="zoom-indicator">100%</div>
 
-            <!-- Canvas container -->
             <div id="canvas-container">
                 <canvas id="pdf-canvas"></canvas>
                 <canvas id="drawing-canvas"></canvas>
                 
-                <!-- Overlay del puntero -->
                 <div id="pointer-overlay">
                     <div id="pointer-dot" class="pointer-dot" style="display: none;">
                         <div class="pointer-outer">
@@ -123,7 +106,6 @@
             </div>
         </div>
 
-        <!-- Guía de controles de gestos -->
         <div class="bg-gradient-to-r from-gray-50 to-blue-50 p-4 rounded-lg border">
             <h3 class="text-sm font-semibold text-gray-700 mb-3">Controles de Gestos:</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs text-gray-600">
@@ -158,20 +140,16 @@
             </div>
         </div>
 
-        <!-- Mensaje de error -->
         <div id="error-message" class="hidden text-center bg-red-100 text-red-700 p-4 rounded-md shadow-inner mt-4">
             <p>Error: No se pudo cargar el documento PDF.</p>
         </div>
 
         
 
-    <!-- JavaScript: Pasar variables de Django a JavaScript -->
     <script>
-        // Variables globales desde Django
         const PDF_URL = "{{ url_pdf }}";
         const COMANDO_GESTO_URL = "{% url 'presentaciones:comando_gesto' %}";
         
-        // Debug info (solo en desarrollo)
         {% if debug %}
         console.log('=== DEBUG INFO ===');
         console.log('PDF URL:', PDF_URL);
@@ -180,8 +158,6 @@
         console.log('==================');
         {% endif %}
     </script>
-    
-    <!-- Cargar el script principal -->
     <script src="{% static 'js/presentar.js' %}"></script>
 </body>
 </html>

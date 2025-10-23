@@ -1,31 +1,24 @@
-/* ============================================== */
-/* SLIDEMOTION - LOGIN CSS STYLES - COMPLETAMENTE INDEPENDIENTE */
-/* ============================================== */
 
-/* Variables específicas para LOGIN */
 :root {
-    --login-color-primary: #7A30C0; /* Morado Oscuro para fondos principales */
-    --login-color-secondary: #FC37AC; /* Fucsia para botones y acentos */
+    --login-color-primary: #7A30C0;
+    --login-color-secondary: #FC37AC;
     --login-color-text-dark: #0b0b0b;
     --login-color-text-light: #000000;
-    --login-header-height: 0px; /* Altura real del header base */
+    --login-header-height: 0px;
     --login-padding-base: 30px;
 }
 
-/* ---------------------------------- */
-/* 1. LAYOUT PRINCIPAL (Dos Columnas) - INDEPENDIENTE */
-/* ---------------------------------- */
+
 
 .auth-container {
     display: flex;
-    padding-top: var(--login-header-height); /* Maneja su propio espacio del header */
+    padding-top: var(--login-header-height);
     min-height: calc(100vh - var(--login-header-height));
     box-sizing: border-box;
 }
 
-/* Mitad Izquierda: Ilustración/Branding */
 .auth-visual-side {
-    flex: 1; /* Ocupa el 50% en escritorio */
+    flex: 1;
     background-color: var(--login-color-primary);
     display: flex;
     justify-content: center;
@@ -33,7 +26,6 @@
     padding: var(--login-padding-base);
     text-align: center;}
 
-/* Estilo para la imagen circular */
 .illustration-circle {
     width: 350px;
     height: 350px;
@@ -54,9 +46,8 @@
 
 }
 
-/* Mitad Derecha: Formulario */
 .auth-form-side {
-    flex: 1; /* Ocupa el 50% en escritorio */
+    flex: 1;
     background-color: white;
     display: flex;
     justify-content: center;
@@ -65,7 +56,6 @@
 
 }
 
-/* Tarjeta del Formulario */
 .form-card {
     max-width: 400px;
     width: 100%;
@@ -75,15 +65,11 @@
 
 }
 
-/* ---------------------------------- */
-/* 2. TIPOGRAFÍA Y FORMULARIO */
-/* ---------------------------------- */
 
 .logo-title-auth {
     font-size: 2.5rem;
     font-weight: 900;
     margin-bottom: 20px;
-    /* Efecto de degradado similar a tu logo */
     background: linear-gradient(90deg, #7A30C0, #FC37AC);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -145,29 +131,26 @@ input[type="password"]:focus {
 }
 
 
-/* ---------------------------------- */
-/* 3. BOTONES Y LINKS */
-/* ---------------------------------- */
 
 .auth-button {
     width: 100%;
-    padding: 0.9rem; /* IGUAL que Register */
-    background: linear-gradient(135deg, #7A30C0 0%, #FC37AC 100%); /* GRADIENTE igual que Register */
+    padding: 0.9rem;
+    background: linear-gradient(135deg, #7A30C0 0%, #FC37AC 100%);
     color: rgb(245, 245, 245);
     border: none;
-    border-radius: 8px; /* IGUAL que Register */
+    border-radius: 8px;
     font-size: 1.1rem;
-    font-weight: 600; /* IGUAL que Register */
+    font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* IGUAL que Register */
-    margin-bottom: 1rem; /* IGUAL que Register */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 1rem;
         background-color: rgb(0, 0, 0);
 
 }
 
 .auth-button:hover {
-    transform: translateY(-2px); /* IGUAL que Register */
-    box-shadow: 0 8px 20px rgba(122, 48, 192, 0.3); /* IGUAL que Register */
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(122, 48, 192, 0.3);
     background-color: red;
 }
 
@@ -178,30 +161,28 @@ input[type="password"]:focus {
 }
 
 .form-footer a {
-    color: var(--login-color-primary); /* Morado visible */
+    color: var(--login-color-primary);
     text-decoration: none;
     font-weight: 600;
     margin: 0 5px;
 }
 
 .form-footer a:hover {
-    color: var(--login-color-secondary); /* Fucsia al hacer hover */
+    color: var(--login-color-secondary);
     text-decoration: underline;
 }
 
 .forgot-password {
     display: block;
     margin-bottom: 10px;
-    color: var(--login-color-primary) !important; /* Forzar color morado */
+    color: var(--login-color-primary) !important;
 }
 
 .register-link {
-    color: var(--login-color-primary) !important; /* Forzar color morado */
+    color: var(--login-color-primary) !important;
 }
 
-/* ---------------------------------- */
-/* 4. RESPONSIVE (Móviles) */
-/* ---------------------------------- */
+
 
 @media (max-width: 800px) {
     .auth-container {
@@ -209,7 +190,7 @@ input[type="password"]:focus {
         margin-top: 0;
     }
     .auth-visual-side {
-        display: none; /* Oculta la ilustración en pantallas pequeñas */
+        display: none;
     }
     .auth-form-side {
         min-height: calc(100vh - var(--header-height));

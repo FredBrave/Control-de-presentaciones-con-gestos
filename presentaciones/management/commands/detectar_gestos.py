@@ -5,7 +5,6 @@ import requests
 import time
 import math
 
-# URL CORREGIDA - debe coincidir con urls.py
 URL_ACTUALIZAR_COMANDO = "http://127.0.0.1:8000/comando-gesto/"
 
 mp_hands = mp.solutions.hands
@@ -17,7 +16,6 @@ class Command(BaseCommand):
     def __init__(self):
         super().__init__()
         
-        # CONFIGURACIÓN DE COOLDOWNS OPTIMIZADA (MAX 0.5s)
         self.COOLDOWNS = {
             'next': 0.5,
             'prev': 0.5,
@@ -40,13 +38,11 @@ class Command(BaseCommand):
         self.ultimos_tiempos = {key: 0 for key in self.COOLDOWNS.keys()}
         self.errores_consecutivos = 0
         
-        # ESTADO DEL SISTEMA DE DIBUJO
         self.modo_dibujo_activo = False
         self.esta_dibujando = False
         self.esta_borrando = False
         self.esta_moviendo = False
         
-        # CONFIGURACIÓN DE SENSIBILIDADES
         self.TOLERANCIA_PULGAR_PISTOLA = 0.05
         self.TOLERANCIA_DIRECCION_PISTOLA = 0.015
         self.SENSIBILIDAD_ZOOM = 0.08
@@ -56,7 +52,6 @@ class Command(BaseCommand):
         self.TOLERANCIA_CUERNOS = 0.04
 
     def puede_enviar_comando(self, tipo_comando):
-        """Verifica si puede enviar un comando basado en su cooldown individual"""
         tiempo_actual = time.time()
         tiempo_ultimo = self.ultimos_tiempos.get(tipo_comando, 0)
         cooldown = self.COOLDOWNS.get(tipo_comando, 0.1)
@@ -69,7 +64,6 @@ class Command(BaseCommand):
         return puede_enviar
 
     def obtener_tiempo_restante(self, tipo_comando):
-        """Obtiene el tiempo restante de cooldown para un comando"""
         tiempo_actual = time.time()
         tiempo_ultimo = self.ultimos_tiempos.get(tipo_comando, 0)
         cooldown = self.COOLDOWNS.get(tipo_comando, 0.1)
@@ -78,7 +72,6 @@ class Command(BaseCommand):
         return max(0, tiempo_restante)
 
     def enviar_comando(self, comando, tipo_comando):
-        """Envía comando solo si el cooldown lo permite - CON PROTECCIÓN"""
         if not self.puede_enviar_comando(tipo_comando):
             return False
         
@@ -91,7 +84,6 @@ class Command(BaseCommand):
             
             if response.status_code == 200:
                 self.errores_consecutivos = 0
-                # Solo log para comandos importantes
                 if tipo_comando in ['next', 'prev', 'toggle_draw_mode', 'clear_drawings']:
                     self.stdout.write(f"✓ Comando enviado: {comando}")
                 return True
@@ -120,13 +112,11 @@ class Command(BaseCommand):
             return False
 
     def calcular_distancia(self, punto1, punto2, ancho_frame, alto_frame):
-        """Calcula la distancia euclidiana entre dos puntos normalizados"""
         x1, y1 = punto1.x * ancho_frame, punto1.y * alto_frame
         x2, y2 = punto2.x * ancho_frame, punto2.y * alto_frame
         return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
     def detectar_gesto_paz(self, hand_landmarks):
-        """Detecta gesto de PAZ (✌️)"""
         landmarks = hand_landmarks.landmark
         
         indice_extendido = landmarks[8].y < landmarks[6].y - 0.03
@@ -140,7 +130,6 @@ class Command(BaseCommand):
                 anular_doblado and menique_doblado and pulgar_controlado)
 
     def detectar_gesto_cuernos(self, hand_landmarks):
-        """Detecta gesto de ROCK/CUERNOS (🤘) para DIBUJAR"""
         landmarks = hand_landmarks.landmark
         
         indice_extendido = landmarks[8].y < landmarks[6].y - 0.025
@@ -169,7 +158,6 @@ class Command(BaseCommand):
         return dedos_extendidos >= 4
 
     def detectar_gesto_pistola(self, hand_landmarks):
-        """Detecta gesto de pistola (👉/👈) para NAVEGACIÓN"""
         landmarks = hand_landmarks.landmark
         
         pulgar_tip = landmarks[mp_hands.HandLandmark.THUMB_TIP]
@@ -198,7 +186,6 @@ class Command(BaseCommand):
         return None
 
     def detectar_puno(self, hand_landmarks):
-        """Detecta puño cerrado (✊) para PUNTERO"""
         landmarks = hand_landmarks.landmark
         
         indice_doblado = landmarks[8].y > landmarks[6].y
@@ -211,7 +198,6 @@ class Command(BaseCommand):
                 menique_doblado and pulgar_doblado)
 
     def obtener_posicion_puntero(self, hand_landmarks):
-        """Obtiene la posición del centro de la mano para el puntero"""
         centro_palma = hand_landmarks.landmark[0]
         dedo_medio_mcp = hand_landmarks.landmark[9]
         
@@ -221,7 +207,6 @@ class Command(BaseCommand):
         return centro_x, centro_y
 
     def detectar_manos_abiertas(self, hands_results):
-        """Detecta cuántas manos abiertas hay (para zoom)"""
         if not hands_results.multi_hand_landmarks:
             return 0, []
         
@@ -237,7 +222,6 @@ class Command(BaseCommand):
         return manos_abiertas, dedos_por_mano
 
     def contar_dedos_extendidos(self, hand_landmarks):
-        """Cuenta cuántos dedos están extendidos"""
         landmarks = hand_landmarks.landmark
         dedos = 0
         
@@ -254,7 +238,6 @@ class Command(BaseCommand):
         return dedos
     
     def detectar_menique_solo(self, hand_landmarks):
-        """Detecta solo el meñique levantado para LIMPIAR"""
         landmarks = hand_landmarks.landmark
         
         menique_extendido = landmarks[20].y < landmarks[18].y - 0.04
@@ -271,7 +254,6 @@ class Command(BaseCommand):
                 anular_doblado and pulgar_doblado and menique_mas_alto)
         
     def mostrar_estado_dibujo(self, frame, y_offset=60):
-        """Muestra el estado del modo dibujo"""
         if self.modo_dibujo_activo:
             color_fondo = (0, 100, 255)
             texto_modo = "MODO DIBUJO: ON"
@@ -295,7 +277,6 @@ class Command(BaseCommand):
         return 0
     
     def detectar_gesto_pinza(self, hand_landmarks, ancho_frame, alto_frame):
-        """Detecta el gesto de pinza (👌) para MOVER"""
         landmarks = hand_landmarks.landmark
         
         pulgar_tip = landmarks[4]
@@ -313,13 +294,11 @@ class Command(BaseCommand):
             self.stderr.write("Error: No se puede abrir la cámara.")
             return
 
-        # Variables para el zoom
         distancia_referencia = None
         zoom_activo = False
         ultimo_zoom = 1.0
         contador_zoom = 0
         
-        # Variables para el puntero
         punto_zoom_x = 0.5
         punto_zoom_y = 0.5
         puntero_activo = False
@@ -343,7 +322,6 @@ class Command(BaseCommand):
                             num_manos = len(results.multi_hand_landmarks)
                             manos_abiertas, dedos_por_mano = self.detectar_manos_abiertas(results)
                             
-                            # MODO ZOOM: 2 manos detectadas
                             if num_manos == 2 and manos_abiertas >= 1 and not self.modo_dibujo_activo:
                                 puntero_activo = False
                                 contador_zoom += 1
@@ -377,7 +355,6 @@ class Command(BaseCommand):
                                     cv2.circle(frame, pulgar1_px, 12, (0, 255, 0), -1)
                                     cv2.circle(frame, pulgar2_px, 12, (0, 255, 0), -1)
                             
-                            # MODO UNA MANO
                             elif num_manos == 1:
                                 contador_zoom = 0
                                 hand_landmarks = results.multi_hand_landmarks[0]
@@ -388,7 +365,6 @@ class Command(BaseCommand):
                                     self.enviar_comando("zoom_1.0_0.5_0.5", 'reset')
                                     ultimo_zoom = 1.0
                                 
-                                # DETECTAR TOGGLE MODO DIBUJO (Gesto PAZ ✌️)
                                 if self.detectar_gesto_paz(hand_landmarks):
                                     if self.enviar_comando("toggle_draw_mode", 'toggle_draw_mode'):
                                         self.modo_dibujo_activo = not self.modo_dibujo_activo
@@ -397,13 +373,11 @@ class Command(BaseCommand):
                                         cv2.putText(frame, f"MODO DIBUJO: {'ACTIVADO ✌️' if self.modo_dibujo_activo else 'DESACTIVADO'}", 
                                                 (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
                                 
-                                # SI MODO DIBUJO ACTIVO
                                 elif self.modo_dibujo_activo:
                                     punto_zoom_x, punto_zoom_y = self.obtener_posicion_puntero(hand_landmarks)
                                     comando_puntero = f"puntero_{punto_zoom_x:.3f}_{punto_zoom_y:.3f}"
                                     self.enviar_comando(comando_puntero, 'puntero')
                                     
-                                    # Detectar limpiar pantalla (meñique solo)
                                     if self.detectar_menique_solo(hand_landmarks):
                                         if self.enviar_comando("clear_drawings", 'clear_drawings'):
                                             cv2.putText(frame, "LIMPIANDO DIBUJOS 👍", (10, 30),
@@ -411,7 +385,6 @@ class Command(BaseCommand):
                                             self.esta_dibujando = False
                                             self.esta_borrando = False
 
-                                    # Detectar pinza para mover
                                     elif self.detectar_gesto_pinza(hand_landmarks, ancho_frame, alto_frame):
                                         if not self.esta_moviendo:
                                             self.esta_moviendo = True
@@ -427,7 +400,6 @@ class Command(BaseCommand):
                                         cv2.putText(frame, "MOVIENDO DIBUJO 👌", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 3)
                                         cv2.circle(frame, puntero_px, 20, (255, 0, 255), 3)
 
-                                    # Detectar gesto de dibujo (CUERNOS 🤘)
                                     elif self.detectar_gesto_cuernos(hand_landmarks):
                                         if self.esta_moviendo:
                                             self.esta_moviendo = False
@@ -446,7 +418,6 @@ class Command(BaseCommand):
                                         cv2.putText(frame, "DIBUJANDO 🤘", (10, 30),
                                                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
                                     
-                                    # Detectar gesto de borrado (MANO ABIERTA)
                                     elif self.detectar_mano_abierta_completa(hand_landmarks):
                                         if self.esta_moviendo:
                                             self.esta_moviendo = False
@@ -465,7 +436,6 @@ class Command(BaseCommand):
                                         cv2.putText(frame, "BORRANDO (Mano Abierta)", (10, 30),
                                                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
                                     
-                                    # Solo puño (puntero normal)
                                     elif self.detectar_puno(hand_landmarks):
                                         if self.esta_dibujando:
                                             self.esta_dibujando = False
@@ -493,7 +463,6 @@ class Command(BaseCommand):
                                             comando_stop = f"stop_erase_{punto_zoom_x:.3f}_{punto_zoom_y:.3f}"
                                             self.enviar_comando(comando_stop, 'stop_erase')
                                 
-                                # MODO NORMAL (navegación)
                                 else:
                                     gesto_pistola = self.detectar_gesto_pistola(hand_landmarks)
                                     
@@ -517,7 +486,6 @@ class Command(BaseCommand):
                                             cv2.putText(frame, f"Cooldown: {tiempo_restante:.2f}s", (10, 30),
                                                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 165, 255), 2)
                                     
-                                    # Detectar puño para mostrar puntero
                                     elif self.detectar_puno(hand_landmarks):
                                         puntero_activo = True
                                         punto_zoom_x, punto_zoom_y = self.obtener_posicion_puntero(hand_landmarks)
@@ -545,7 +513,6 @@ class Command(BaseCommand):
                                     self.enviar_comando("zoom_1.0_0.5_0.5", 'reset')
                                     ultimo_zoom = 1.0
 
-                            # Dibujar landmarks
                             for hand_landmarks in results.multi_hand_landmarks:
                                 mp_drawing.draw_landmarks(
                                     frame, hand_landmarks, mp_hands.HAND_CONNECTIONS,
@@ -562,7 +529,6 @@ class Command(BaseCommand):
                                 self.enviar_comando("zoom_1.0_0.5_0.5", 'reset')
                                 ultimo_zoom = 1.0
                             
-                            # Si estaba dibujando o borrando, detener
                             if self.esta_dibujando:
                                 self.esta_dibujando = False
                                 self.enviar_comando("stop_draw_0.5_0.5", 'stop_draw')
@@ -570,13 +536,10 @@ class Command(BaseCommand):
                                 self.esta_borrando = False
                                 self.enviar_comando("stop_erase_0.5_0.5", 'stop_erase')
 
-                        # Mostrar estado del modo dibujo
                         draw_offset = self.mostrar_estado_dibujo(frame, alto_frame - 200)
                         
-                        # Mostrar cooldowns activos visualmente
                         cooldown_offset = self.mostrar_cooldowns_activos(frame, alto_frame - 150 + draw_offset)
 
-                        # Estados y configuración
                         estado_y = alto_frame - 100 + cooldown_offset + draw_offset
                         if self.modo_dibujo_activo:
                             cv2.putText(frame, "MODO: DIBUJO", (10, estado_y),
@@ -591,20 +554,18 @@ class Command(BaseCommand):
                             cv2.putText(frame, "MODO: NAVEGACION", (10, estado_y),
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
-                        # Mostrar configuración de gestos mejorados
                         config_y = estado_y + 30
                         cv2.putText(frame, "Gestos: PAZ=Toggle | CUERNOS=Dibujar | MANO ABIERTA=Borrar", 
                                 (10, config_y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 200, 200), 1)
 
                         cv2.imshow("Detector con Gestos Mejorados", frame)
-                        if cv2.waitKey(1) & 0xFF == 27:  # ESC para salir
+                        if cv2.waitKey(1) & 0xFF == 27:
                             break
 
                 cap.release()
                 cv2.destroyAllWindows()
             
     def mostrar_cooldowns_activos(self, frame, y_offset=30):
-        """Muestra visualmente los cooldowns activos en el frame"""
         tiempo_actual = time.time()
         cooldowns_activos = []
                 

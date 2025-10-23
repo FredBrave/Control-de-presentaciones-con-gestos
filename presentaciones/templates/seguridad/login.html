@@ -10,30 +10,18 @@
 {% block content %}
 
 <div class="auth-container">
-    <!-- Mitad Izquierda: Branding e Ilustración -->
     <div class="auth-visual-side">
-        <!-- El logo "SLIDEMOTION" ya debe estar en base.html, pero lo incluimos aquí como texto
-             si se necesita, aunque la imagen sugiere que el logo grande no está en esta mitad.
-             Aquí ponemos un espacio para tu imagen principal: -->
         <div class="branding-content">
-            <!--
-                REEMPLAZA el placeholder a continuación con tu imagen principal (la de la mano en el círculo)
-                
-                Usa {% static 'path/a/tu/imagen.png' %} si estás usando Django.
-                Ejemplo: {% static 'img/gesture_illustration.png' %}
-            -->
             <div class="illustration-circle">
-                <!-- Placeholder de imagen: Reemplazar con el path de tu imagen de ilustración -->
                 <img src="{% static 'img/logo2.png' %}" alt="Ilustración de control de gestos" onerror="this.src='https://placehold.co/200x200/FFFFFF/7A30C0?text=IMAGEN+PRINCIPAL'">
             </div>
 
         </div>
     </div>
 
-    <!-- Mitad Derecha: Formulario de Autenticación -->
     <div class="auth-form-side">
         <div class="form-card">
-            <h1 class="logo-title-auth">SLIDEMOTION</h1> <!-- Título/Logo del sistema en el formulario -->
+            <h1 class="logo-title-auth">SLIDEMOTION</h1>
             <h2 class="form-title">Autenticarse</h2>
 
             <form action="{% url 'login' %}" method="POST" class="login-form">
@@ -64,7 +52,6 @@
 </div>
 
 <script>
-    // Pequeño script para mostrar/ocultar la contraseña
     document.addEventListener('DOMContentLoaded', () => {
         const toggle = document.querySelector('.password-toggle');
         const passwordInput = document.querySelector('#password');

@@ -11,13 +11,10 @@
 </head>
 
 <body>
-    <!-- Contenedor Principal Flex para asegurar que el footer esté siempre abajo -->
     <div id="base-container" class="base-container">
         
         <header class="header-slidemotion">
-            <!-- Sección de Logo -->
             <div class="logo-section">
-                <!-- Logo SLIDEMOTION con slogan.png -->
                 <a href="{% url 'presentaciones:home' %}" class="logo-link">
                     <img src="{% static 'img/logo2.png' %}" alt="SLIDEMOTION Logo" class="logo-img">
                     <div class="logo-content">
@@ -28,7 +25,6 @@
             </div>
 
             {% if user.is_authenticated %}
-                <!-- Modo logueado -->
                 <nav class="user-controls">
                     <div class="user-pill">
                         <i class="fas fa-user-circle mr-1"></i> {{ user.username }}
@@ -41,7 +37,6 @@
                     </form>
                 </nav>
             {% else %}
-                <!-- Modo no logueado -->
                 <nav class="auth-controls">
                     <a href="{% url 'presentaciones:login' %}" class="auth-btn auth-btn-login">Iniciar Sesión</a>
                     <a href="{% url 'presentaciones:register' %}" class="auth-btn auth-btn-register">Registrarse</a>
@@ -51,11 +46,9 @@
         
         <main class="main-content">
             {% block content %}
-            <!-- Aquí se insertará el contenido específico de cada página -->
             {% endblock %}
         </main>
 
-        <!-- Pie de pagina -->
         <footer class="main-footer">
             <div class="footer-inner">
                 <div class="footer-description">
