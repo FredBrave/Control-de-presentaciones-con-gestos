@@ -5,6 +5,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,6 @@ TOKEN_FILE = os.path.join(BASE_DIR, 'config', 'token.pickle')
 
 
 def get_drive_service():
-    """Obtiene el servicio de Drive autenticado con OAuth."""
     creds = None
 
     if os.path.exists(TOKEN_FILE):
@@ -39,7 +39,14 @@ def get_drive_service():
 
 
 def get_or_create_user_folder(user):
-    service = get_drive_service()
+    try:
+        service = get_drive_service()
+    except RefreshError:
+        import os
+        if os.path.exists('token.json'):
+            os.remove('token.json')
+        print("Token inválido. Por favor, vuelve a autenticarte.")
+        service = get_drive_service()
 
     PARENT_FOLDER_ID = '1E4I8mIp6PAUaJdXIax9rplVBmdS3sbGR'
 
@@ -69,7 +76,14 @@ def get_or_create_user_folder(user):
 
 
 def upload_to_drive(filepath, filename, folder_id):
-    service = get_drive_service()
+    try:
+        service = get_drive_service()
+    except RefreshError:
+        import os
+        if os.path.exists('token.json'):
+            os.remove('token.json')
+        print("Token inválido. Por favor, vuelve a autenticarte.")
+        service = get_drive_service()
 
     file_metadata = {'name': filename, 'parents': [folder_id]}
     media = MediaFileUpload(filepath, resumable=True)

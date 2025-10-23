@@ -3,10 +3,11 @@
     <h3 class="sidebar-title">Acceso Rápido:</h3>
     <nav class="nav-menu">
         <!-- Botones de Navegación (Usamos 'dash-btn-active' para página actual) -->
-        <a href="{% url 'home' %}" class="dash-btn {% if current_page == 'home' %}dash-btn-active{% endif %}">
+
+        <a href="{% url 'presentaciones:home' %}" class="dash-btn {% if current_page == 'home' %}dash-btn-active{% endif %}">
             <i class="fas fa-home"></i> Inicio
         </a>
-        <a href="{% url 'upload' %}" class="dash-btn {% if current_page == 'upload' %}dash-btn-active{% endif %}">
+        <a href="{% url 'presentaciones:upload' %}" class="dash-btn {% if current_page == 'upload' %}dash-btn-active{% endif %}">
             <i class="fas fa-upload"></i> Subir Presentacion
         </a>
         <a href="#" class="dash-btn {% if current_page == 'presentation' %}dash-btn-active{% endif %}">

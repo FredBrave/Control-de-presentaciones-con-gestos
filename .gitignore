@@ -19,7 +19,10 @@ config/
 presentaciones/config/oauth.json
 presentaciones/config/*.json
 token.json
+<<<<<<< HEAD
 >>>>>>> stage
+=======
+>>>>>>> cda8f2e (RF-11: Presentacion con gestos. Gesto zoom con puntero)
 
 # Configuración local
 *.env

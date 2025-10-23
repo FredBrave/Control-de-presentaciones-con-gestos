@@ -41,10 +41,10 @@
             </div>
 
             <div class="action-buttons-group">
-                <a href="{% url 'upload' %}" class="btn-primary">
+                <a href="{% url 'presentaciones:upload' %}" class="btn-primary">
                     <i class="fas fa-plus-circle"></i> Crear nueva presentación
                 </a>
-                <a href="{% url 'import_from_google_slides' %}" class="btn-primary btn-google">
+                <a href="{% url 'presentaciones:import_from_google_slides' %}" class="btn-primary btn-google">
                     <i class="fab fa-google-drive"></i> Importar Google Slides
                 </a>
             </div>
@@ -59,7 +59,7 @@
                             </button>
                             
                             <div class="presentation-dropdown">
-                                <a href="{{ p.enlace_drive }}" target="_blank" class="dropdown-item" data-action="presentar">
+                                <a href="{% url 'presentaciones:presentar' p.id %}" class="dropdown-item" data-action="presentar">
                                     <i class="fas fa-play"></i>
                                     <span>Presentar</span>
                                 </a>

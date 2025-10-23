@@ -1,12 +1,21 @@
+<<<<<<< HEAD
 from django.shortcuts import render, redirect
 import os
 import traceback
 import logging
+=======
+from django.shortcuts import render, redirect, get_object_or_404
+import os, cv2
+import traceback
+import logging
+from django.core.files import File
+>>>>>>> cda8f2e (RF-11: Presentacion con gestos. Gesto zoom con puntero)
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm
 from django.contrib.auth import get_user_model
 from google.oauth2 import service_account
+<<<<<<< HEAD
 from django.core.files import File
 from .google_drive_oauth import get_or_create_user_folder, upload_to_drive
 from googleapiclient.discovery import build
@@ -14,6 +23,15 @@ import tempfile
 from googleapiclient.errors import HttpError
 from django.urls import reverse
 import time
+=======
+from .google_drive_oauth import get_or_create_user_folder, upload_to_drive
+from googleapiclient.discovery import build
+import tempfile
+from django.http import JsonResponse
+from django.urls import reverse
+from CPG import settings
+import time, subprocess, threading
+>>>>>>> cda8f2e (RF-11: Presentacion con gestos. Gesto zoom con puntero)
 from .models import Presentacion
 from django.contrib.auth.decorators import login_required
 from .forms import UploadPresentationForm
@@ -23,12 +41,25 @@ from .google_slides_import import (
     get_user_presentations,
     copy_presentation_to_drive
 )
+from django.views.decorators.csrf import csrf_exempt
+import json
 
+# Variables Globales
 logger = logging.getLogger(__name__)
-
-
-
+detector_process = None
+detector_thread = None
+detector_running = False
 User = get_user_model()
+ultimo_comando = None
+def safe_remove(path, retries=3, delay=1):
+    for i in range(retries):
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+            break
+        except PermissionError:
+            time.sleep(delay)
+
 
 def safe_remove(path, retries=3, delay=1):
     for i in range(retries):
@@ -58,7 +89,7 @@ def registerPage(request):
                 user.username = user.username.lower()
                 user.save()
                 login(request, user)
-                return redirect('home')
+                return redirect('presentaciones:home')
             else:
                 for field, errors in form.errors.items():
                     for error in errors:
@@ -82,7 +113,7 @@ def loginPage(request):
 
         if user is not None:
             login(request, user)
-            return redirect("home")  
+            return redirect("presentaciones:home")  
         else:
             messages.error(request, "Usuario o contraseña incorrectos")
 
@@ -91,7 +122,7 @@ def loginPage(request):
 @login_required
 def logoutUser(request):
     logout(request)
-    return redirect('login')
+    return redirect('presentaciones:login')
 
 @login_required
 def home(request):
@@ -101,8 +132,6 @@ def home(request):
         'presentaciones': presentaciones
     }
     return render(request, 'presentaciones/home.html', context)
-
-logger = logging.getLogger(__name__)
 
 @login_required
 def uploadPage(request):
@@ -132,7 +161,8 @@ def uploadPage(request):
                 if ext == '.pptx':
                     if os.name != 'nt':
                         messages.error(request, 'La conversión de PPTX a PDF solo está disponible en Windows.')
-                        return redirect('upload')
+
+                        return redirect('presentaciones:upload')
                     
                     try:
                         import comtypes.client
@@ -154,11 +184,14 @@ def uploadPage(request):
                     except Exception as e:
                         logger.error(f"Error al convertir PPTX: {e}")
                         messages.error(request, 'Error al convertir el archivo PPTX a PDF.')
-                        return redirect('upload')
 
                 if not upload_name.lower().endswith('.pdf'):
                     messages.error(request, 'Solo se permiten archivos PDF o PPTX.')
-                    return redirect('upload')
+                    return redirect('presentaciones:upload')
+
+                if not upload_name.lower().endswith('.pdf'):
+                    messages.error(request, 'Solo se permiten archivos PDF o PPTX.')
+                    return redirect('presentaciones:upload')
 
                 if ubicacion == 'drive':
                     
@@ -177,8 +210,7 @@ def uploadPage(request):
                         ubicacion='drive'
                     )
                     
-                    messages.success(request, f'✓ Presentación "{titulo}" subida correctamente a Google Drive.')
-                
+                    messages.success(request, f'Presentación "{titulo}" subida correctamente a Google Drive.')                
                 else:
                     presentacion = Presentacion.objects.create(
                         usuario=user,
@@ -190,7 +222,7 @@ def uploadPage(request):
                     with open(upload_path, 'rb') as f:
                         presentacion.archivo_local.save(upload_name, File(f), save=False)
                     
-                    messages.success(request, f'✓ Presentación "{titulo}" guardada correctamente en el servidor.')
+                    messages.success(request, f'Presentación "{titulo}" guardada correctamente en el servidor.')
 
                 try:
                     presentacion.generar_miniatura()
@@ -199,15 +231,15 @@ def uploadPage(request):
                 
                 presentacion.save()
 
-                return redirect('home')
-
+                return redirect('presentaciones:home')
             except Exception as e:
                 error_traceback = traceback.format_exc()
                 logger.error(f"Error durante la subida para {user.username}: {e}")
                 logger.error(error_traceback)
                 messages.error(request, f'Ocurrió un error al procesar tu archivo: {str(e)}')
-                return redirect('upload')
 
+                return redirect('presentaciones:upload')
+            
             finally:
                 if tmp_path:
                     safe_remove(tmp_path)
@@ -235,7 +267,7 @@ def import_from_google_slides(request):
     except Exception as e:
         logger.error(f"Error al iniciar OAuth: {e}")
         messages.error(request, 'Error al conectar con Google. Verifica tu configuración.')
-        return redirect('home')
+        return redirect('presentaciones:home')
 
 @login_required
 def oauth2callback(request):
@@ -245,12 +277,14 @@ def oauth2callback(request):
     
     if error:
         messages.error(request, f'Error de autorización: {error}')
-        return redirect('home')
+
+        return redirect('presentaciones:home')
     
     session_state = request.session.get('oauth_state')
     if not state or state != session_state:
         messages.error(request, 'Error de seguridad. Intenta nuevamente.')
-        return redirect('home')
+
+        return redirect('presentaciones:home')
     
     try:
         redirect_uri = request.build_absolute_uri(reverse('oauth2callback'))
@@ -258,12 +292,14 @@ def oauth2callback(request):
         
         request.session['google_credentials'] = credentials_dict
         
-        return redirect('select_presentations')
+
+        return redirect('presentaciones:select_presentations')
         
     except Exception as e:
         logger.error(f"Error en OAuth callback: {e}")
         messages.error(request, 'Error al procesar la autorización.')
-        return redirect('home')
+
+        return redirect('presentaciones:home')
 
 
 @login_required
@@ -272,7 +308,8 @@ def select_presentations(request):
     
     if not credentials_dict:
         messages.error(request, 'Sesión expirada. Por favor, autoriza nuevamente.')
-        return redirect('import_from_google_slides')
+
+        return redirect('presentaciones:import_from_google_slides')
     
     try:
         presentations = get_user_presentations(credentials_dict)
@@ -289,25 +326,29 @@ def select_presentations(request):
         logger.error(f"Error al obtener presentaciones: {e}")
         logger.error(error_traceback)
         messages.error(request, f'Error al obtener tus presentaciones de Google Slides: {str(e)}')
-        return redirect('home')
+
+        return redirect('presentaciones:home')
 
 
 @login_required
 def import_selected_presentations(request):
     if request.method != 'POST':
-        return redirect('select_presentations')
+
+        return redirect('presentaciones:select_presentations')
     
     credentials_dict = request.session.get('google_credentials')
     
     if not credentials_dict:
         messages.error(request, 'Sesión expirada. Por favor, autoriza nuevamente.')
-        return redirect('import_from_google_slides')
+
+        return redirect('presentaciones:import_from_google_slides')
     
     selected_ids = request.POST.getlist('presentations')
     
     if not selected_ids:
         messages.warning(request, 'No seleccionaste ninguna presentación.')
-        return redirect('select_presentations')
+
+        return redirect('presentaciones:select_presentations')
     
     try:
         folder_id = get_or_create_user_folder(request.user)
@@ -316,7 +357,7 @@ def import_selected_presentations(request):
             raise Exception("No se pudo obtener la carpeta del usuario.")
         
         imported_count = 0
-        errores = []
+
         presentations = get_user_presentations(credentials_dict)
         presentations_dict = {p['id']: p for p in presentations}
         
@@ -337,7 +378,8 @@ def import_selected_presentations(request):
                     if presentation_id in presentations_dict:
                         thumbnail_url = presentations_dict[presentation_id].get('thumbnailLink')
                     
-                    Presentacion.objects.create(
+
+                    presentacion = Presentacion.objects.create(
                         usuario=request.user,
                         nombre=copied_data['name'],
                         drive_id=copied_data['id'],
@@ -345,38 +387,280 @@ def import_selected_presentations(request):
                         miniatura_url=thumbnail_url
                     )
                     imported_count += 1
-                    
-            except HttpError as e:
-                if e.resp.status == 404:
-                    msg = f"La presentación con ID {presentation_id} no se encontró o no tienes permisos para copiarla."
-                else:
-                    msg = f"Ocurrió un error al importar la presentación {presentation_id}."
-                errores.append(msg)
-                logger.error(msg)
-                continue
-
             except Exception as e:
-                msg = f"Error inesperado al importar presentación {presentation_id}: {e}"
-                errores.append(msg)
-                logger.error(msg)
+                logger.error(f"Error al importar presentación {presentation_id}: {e}")
                 continue
         
         if imported_count > 0:
-            messages.success(request, f'Se importaron {imported_count} presentación(es) correctamente.')
-
-        if errores:
-            for err in errores:
-                messages.error(request, err)
-
-        if imported_count == 0 and not errores:
+            messages.success(
+                request, 
+                f'Se importaron {imported_count} presentación(es) correctamente.'
+            )
+        else:
             messages.warning(request, 'No se pudo importar ninguna presentación.')
-
+        
         if 'google_credentials' in request.session:
             del request.session['google_credentials']
         
-        return redirect('home')
+        return redirect('presentaciones:home')
         
     except Exception as e:
         logger.error(f"Error al importar presentaciones: {e}")
-        messages.error(request, f"Ocurrió un error al importar las presentaciones: {e}")
-        return redirect('home')
+        messages.error(request, 'Error al importar las presentaciones.')
+        return redirect('presentaciones:home')
+    
+
+detector_process = None
+detector_thread = None
+detector_running = False
+
+
+@login_required
+def presentar(request, presentacion_id):
+    presentacion = get_object_or_404(Presentacion, id=presentacion_id, usuario=request.user)
+    
+    tipo_almacenamiento = 'drive' if presentacion.enlace_drive else 'local'
+    
+    url_pdf = None
+    tipo_archivo = None
+    
+    if tipo_almacenamiento == 'drive':
+        url_pdf = presentacion.enlace_drive
+        tipo_archivo = 'drive'
+    else:
+        if presentacion.archivo_local:
+            extension = presentacion.archivo_local.name.split('.')[-1].lower()
+            tipo_archivo = extension
+            
+            if extension == 'pdf':
+                url_pdf = presentacion.archivo_local.url
+            elif extension in ['pptx', 'ppt', 'odp']:
+                url_pdf = f"https://docs.google.com/viewer?url={request.build_absolute_uri(presentacion.archivo_local.url)}&embedded=true"
+    
+    global detector_process, detector_running
+    
+    detector_iniciado = False
+    mensaje_detector = ""
+    
+    if not detector_running:
+        try:
+            cap = cv2.VideoCapture(0)
+            
+            if cap.isOpened():
+                cap.release()
+                time.sleep(0.5)
+                
+                detector_process = subprocess.Popen(
+                    ['python', 'manage.py', 'detectar_gestos'],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True
+                )
+                
+                detector_running = True
+                time.sleep(2)
+                
+                if detector_process.poll() is None:
+                    detector_iniciado = True
+                    mensaje_detector = "Detector de gestos iniciado correctamente"
+                else:
+                    detector_running = False
+                    mensaje_detector = "Error: El detector no pudo iniciarse"
+            else:
+                cap.release()
+                mensaje_detector = "Advertencia: No se detectó cámara"
+                
+        except ImportError:
+            mensaje_detector = "Error: OpenCV no está instalado"
+        except Exception as e:
+            detector_running = False
+            mensaje_detector = f"Error al iniciar detector: {str(e)}"
+    else:
+        detector_iniciado = True
+        mensaje_detector = "Detector ya está en ejecución"
+    
+    context = {
+        'presentacion': presentacion,
+        'url_pdf': url_pdf,
+        'tipo_almacenamiento': tipo_almacenamiento,
+        'tipo_archivo': tipo_archivo,
+        'debug': settings.DEBUG,
+        'detector_iniciado': detector_iniciado,
+        'mensaje_detector': mensaje_detector,
+    }
+    
+    return render(request, 'presentaciones/presentar.html', context)
+
+
+@login_required
+def iniciar_detector(request):
+    global detector_process, detector_thread, detector_running
+    
+    if detector_running:
+        return JsonResponse({
+            'success': True,
+            'message': 'Detector ya está en ejecución',
+            'status': 'running'
+        })
+    
+    try:
+        cap = cv2.VideoCapture(0)
+        
+        if not cap.isOpened():
+            cap.release()
+            return JsonResponse({
+                'success': False,
+                'message': 'No se pudo acceder a la cámara',
+                'error': 'camera_not_found'
+            })
+        
+        cap.release()
+        time.sleep(0.5)
+        
+        detector_process = subprocess.Popen(
+            ['python', 'manage.py', 'detectar_gestos'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True
+        )
+        
+        detector_running = True
+        
+        time.sleep(2)
+        
+        if detector_process.poll() is not None:
+            detector_running = False
+            return JsonResponse({
+                'success': False,
+                'message': 'Error al iniciar el detector',
+                'error': 'detector_failed'
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Detector iniciado correctamente',
+            'status': 'started'
+        })
+        
+    except ImportError:
+        return JsonResponse({
+            'success': False,
+            'message': 'OpenCV no está instalado',
+            'error': 'opencv_missing'
+        })
+    except Exception as e:
+        detector_running = False
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al iniciar el detector: {str(e)}',
+            'error': 'unknown_error'
+        })
+
+
+@login_required
+def detener_detector(request):
+    global detector_process, detector_running
+    
+    if not detector_running or detector_process is None:
+        return JsonResponse({
+            'success': True,
+            'message': 'Detector no está en ejecución',
+            'status': 'stopped'
+        })
+    
+    try:
+        detector_process.terminate()
+        
+        try:
+            detector_process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            detector_process.kill()
+        
+        detector_running = False
+        detector_process = None
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Detector detenido correctamente',
+            'status': 'stopped'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al detener el detector: {str(e)}',
+            'error': 'stop_failed'
+        })
+
+
+@login_required
+def verificar_estado_detector(request):
+    global detector_process, detector_running
+    
+    if not detector_running or detector_process is None:
+        return JsonResponse({
+            'running': False,
+            'status': 'stopped'
+        })
+    
+    if detector_process.poll() is not None:
+        detector_running = False
+        detector_process = None
+        return JsonResponse({
+            'running': False,
+            'status': 'crashed'
+        })
+    
+    return JsonResponse({
+        'running': True,
+        'status': 'running'
+    })
+
+
+@csrf_exempt
+def comando_gesto(request):
+    global ultimo_comando
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            comando = data.get('comando')
+            
+            if comando:
+                ultimo_comando = comando
+                print(f"[COMANDO] Recibido: {comando}")
+                return JsonResponse({
+                    'success': True,
+                    'comando': comando,
+                    'message': 'Comando actualizado'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'No se proporcionó comando'
+                }, status=400)
+                
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'JSON inválido'
+            }, status=400)
+    
+    elif request.method == 'GET':
+        if ultimo_comando:
+            comando_actual = ultimo_comando
+            ultimo_comando = None
+            return JsonResponse({
+                'success': True,
+                'comando': comando_actual
+            })
+        else:
+            return JsonResponse({
+                'success': True,
+                'comando': None
+            })
+    
+    return JsonResponse({
+        'success': False,
+        'message': 'Método no permitido'
+    }, status=405)

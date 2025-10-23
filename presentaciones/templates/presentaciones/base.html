@@ -18,7 +18,7 @@
             <!-- Sección de Logo -->
             <div class="logo-section">
                 <!-- Logo SLIDEMOTION con slogan.png -->
-                <a href="{% url 'home' %}" class="logo-link">
+                <a href="{% url 'presentaciones:home' %}" class="logo-link">
                     <img src="{% static 'img/logo2.png' %}" alt="SLIDEMOTION Logo" class="logo-img">
                     <div class="logo-content">
                         <span class="logo-text">SLIDEMOTION</span>
@@ -33,7 +33,8 @@
                     <div class="user-pill">
                         <i class="fas fa-user-circle mr-1"></i> {{ user.username }}
                     </div>
-                    <form method="post" action="{% url 'logout' %}">
+
+                    <form method="post" action="{% url 'presentaciones:logout' %}">
                         {% csrf_token %}
                         <button type="submit" class="logout-btn">
                             Cerrar Sesión
@@ -43,8 +44,8 @@
             {% else %}
                 <!-- Modo no logueado -->
                 <nav class="auth-controls">
-                    <a href="{% url 'login' %}" class="auth-btn auth-btn-login">Iniciar Sesión</a>
-                    <a href="{% url 'register' %}" class="auth-btn auth-btn-register">Registrarse</a>
+                    <a href="{% url 'presentaciones:login' %}" class="auth-btn auth-btn-login">Iniciar Sesión</a>
+                    <a href="{% url 'presentaciones:register' %}" class="auth-btn auth-btn-register">Registrarse</a>
                 </nav>
             {% endif %}
         </header>
