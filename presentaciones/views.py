@@ -107,7 +107,7 @@ def logoutUser(request):
     logout(request)
     return redirect('presentaciones:login')
 
-@login_required
+@login_required(login_url='presentaciones:login')
 def home(request):
     presentaciones = Presentacion.objects.filter(usuario=request.user).order_by('-fecha_subida')[:10]
 

@@ -24,7 +24,7 @@
             <h1 class="logo-title-auth">SLIDEMOTION</h1>
             <h2 class="form-title">Autenticarse</h2>
 
-            <form action="{% url 'login' %}" method="POST" class="login-form">
+            <form action="{% url 'presentaciones:login' %}" method="POST" class="login-form">
                 {% csrf_token %}
                 
                 <div class="form-group">
@@ -45,7 +45,7 @@
 
             <div class="form-footer">
                 <a href="#" class="forgot-password">¿Olvidaste tu clave?</a>
-                <p>No Tienes Una Cuenta ? <a href="{% url 'register' %}" class="register-link">Crear Cuenta</a></p>
+                <p>No Tienes Una Cuenta ? <a href="{% url 'presentaciones:register' %}" class="register-link">Crear Cuenta</a></p>
             </div>
         </div>
     </div>

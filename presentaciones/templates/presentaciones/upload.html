@@ -1,4 +1,9 @@
 {% extends 'presentaciones/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/upload.css' %}">
+{% endblock %}
 
 {% block title %}Subir Presentación{% endblock %}
 
@@ -101,37 +106,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-    
-    .form-check-label {
-        cursor: pointer;
-        width: 100%;
-    }
-    
-    .form-check {
-        padding: 10px;
-        border-radius: 5px;
-        transition: background-color 0.2s;
-    }
-    
-    .form-check:hover {
-        background-color: rgba(13, 110, 253, 0.05);
-    }
-    
-    .card {
-        border: none;
-        border-radius: 10px;
-    }
-    
-    .card-header {
-        border-radius: 10px 10px 0 0 !important;
-    }
-</style>
 
 <script>
     document.getElementById('uploadForm').addEventListener('submit', function(e) {
