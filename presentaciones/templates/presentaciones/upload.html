@@ -2,77 +2,97 @@
 {% load static %}
 
 {% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+<link rel="stylesheet" href="{% static 'css/componentes/accesso-rapido.css' %}">
 <link rel="stylesheet" href="{% static 'css/upload.css' %}">
 {% endblock %}
 
 {% block title %}Subir Presentación{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-cloud-upload"></i> Subir Presentación
-                    </h4>
-                </div>
-                <div class="card-body">
+<div id="dashboard-container" class="dashboard-layout">
+            
+    <aside id="sidebar" class="sidebar-slidemotion">
+        <div class="camera-indicator">
+            <span class="camera-text">
+                <i class="fas fa-video"></i> cámara detectada
+            </span>
+            <span class="camera-dot"></span>
+        </div>
+
+        {% include 'presentaciones/componentes/accesso-rapido.html' with current_page='upload' %}
+    </aside>
+    
+    <div id="view-container" class="view-container">
+        <div class="view-padding">
+            <div class="upload-card-container">
+                <div class="upload-card">
+                    <div class="upload-card-header">
+                        <h1 class="upload-title">
+                            <i class="bi bi-cloud-upload"></i> Subir Presentación
+                        </h1>
+                    </div>
                     <form method="post" enctype="multipart/form-data" id="uploadForm">
                         {% csrf_token %}
 
-                        <div class="mb-4">
-                            <label for="{{ form.titulo.id_for_label }}" class="form-label fw-bold">
+                        <div class="form-group">
+                            <label for="{{ form.titulo.id_for_label }}" class="form-label">
                                 <i class="bi bi-pencil"></i> {{ form.titulo.label }}
                             </label>
                             {{ form.titulo }}
                             {% if form.titulo.errors %}
-                                <div class="alert alert-danger mt-2 p-2">
+                                <div class="alert alert-danger">
                                     {{ form.titulo.errors }}
                                 </div>
                             {% endif %}
-                            <small class="form-text text-muted">
+                            <small class="form-text">
                                 Ingresa un nombre descriptivo para tu presentación
                             </small>
                         </div>
 
-                        <div class="mb-4">
-                            <label for="{{ form.archivo.id_for_label }}" class="form-label fw-bold">
+                        <div class="form-group">
+                            <label for="{{ form.archivo.id_for_label }}" class="form-label">
                                 <i class="bi bi-file-earmark-pdf"></i> {{ form.archivo.label }}
                             </label>
                             {{ form.archivo }}
                             {% if form.archivo.errors %}
-                                <div class="alert alert-danger mt-2 p-2">
+                                <div class="alert alert-danger">
                                     {{ form.archivo.errors }}
                                 </div>
                             {% endif %}
-                            <small class="form-text text-muted">
+                            <small class="form-text">
                                 Formatos permitidos: <strong>PDF</strong> o <strong>PPTX</strong> (max 50MB)
                             </small>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
+                        <div class="form-group">
+                            <label class="form-label">
                                 <i class="bi bi-geo-alt"></i> Ubicación de almacenamiento
                             </label>
                             
-                            <div class="border rounded p-3 bg-light">
-                                <div class="form-check mb-3">
+                            <div class="location-options">
+                                <div class="location-option">
                                     <input class="form-check-input" type="radio" name="ubicacion" id="ubicacion_drive" value="drive" checked>
-                                    <label class="form-check-label" for="ubicacion_drive">
-                                        <strong><i class="bi bi-cloud text-primary"></i> Google Drive</strong>
-                                        <small class="d-block text-muted ms-4">
+                                    <label class="location-label" for="ubicacion_drive">
+                                        <div class="location-header">
+                                            <i class="bi bi-cloud text-primary"></i>
+                                            <strong>Google Drive</strong>
+                                        </div>
+                                        <small class="location-description">
                                             Los archivos se almacenarán en tu carpeta personal de Google Drive. 
                                             Accesibles desde cualquier dispositivo.
                                         </small>
                                     </label>
                                 </div>
 
-                                <div class="form-check mb-3">
+                                <div class="location-option">
                                     <input class="form-check-input" type="radio" name="ubicacion" id="ubicacion_local" value="local">
-                                    <label class="form-check-label" for="ubicacion_local">
-                                        <strong><i class="bi bi-hdd text-success"></i> Servidor Local</strong>
-                                        <small class="d-block text-muted ms-4">
+                                    <label class="location-label" for="ubicacion_local">
+                                        <div class="location-header">
+                                            <i class="bi bi-hdd text-success"></i>
+                                            <strong>Servidor Local</strong>
+                                        </div>
+                                        <small class="location-description">
                                             Los archivos se guardarán en el servidor de la aplicación. 
                                             Acceso más rápido y sin límites de almacenamiento.
                                         </small>
@@ -81,27 +101,27 @@
                             </div>
                             
                             {% if form.ubicacion.errors %}
-                                <div class="alert alert-danger mt-2 p-2">
+                                <div class="alert alert-danger">
                                     {{ form.ubicacion.errors }}
                                 </div>
                             {% endif %}
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary btn-submit" id="submitBtn">
                                 <i class="bi bi-upload"></i> Subir Presentación
                             </button>
-                            <a href="{% url 'presentaciones:home' %}" class="btn btn-outline-secondary">
+                            <a href="{% url 'presentaciones:home' %}" class="btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Cancelar
                             </a>
                         </div>
                     </form>
-                </div>
-            </div>
 
-            <div class="alert alert-info mt-3" role="alert">
-                <i class="bi bi-info-circle"></i> 
-                <strong>Nota:</strong> Los archivos PPTX se convertirán automáticamente a PDF antes de ser almacenados.
+                    <div class="upload-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Nota:</strong> Los archivos PPTX se convertirán automáticamente a PDF antes de ser almacenados.
+                    </div>
+                </div>
             </div>
         </div>
     </div>

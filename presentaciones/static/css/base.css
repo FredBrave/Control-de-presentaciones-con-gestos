@@ -132,9 +132,6 @@ body {
 
 
 
-/* ============================================== */
-/* CONTROLES DE AUTENTICACIÓN (Login/Register) */
-/* ============================================== */
 .auth-controls {
     display: flex;
     gap: 1rem;
@@ -231,9 +228,7 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* ============================================== */
-/* CONTROLES DE USUARIO (Cuando está autenticado) */
-/* ============================================== */
+
 .user-controls {
     display: flex;
     align-items: center;
@@ -400,11 +395,7 @@ body {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-/* ============================================== */
-/* RESPONSIVE DESIGN */
-/* ============================================== */
 
-/* Tablets y pantallas medianas */
 @media (max-width: 992px) {
     .header-slidemotion {
         padding: 0.75rem 1.25rem;
@@ -422,7 +413,6 @@ body {
     }
 }
 
-/* Móviles y pantallas pequeñas */
 @media (max-width: 768px) {
     .header-slidemotion {
         padding: 0.75rem 1rem;
@@ -455,7 +445,6 @@ body {
         font-size: 0.8rem;
     }
 
-    /* Botones de autenticación en móvil */
     .auth-controls {
         flex: 1 1 100%;
         justify-content: center;
@@ -471,7 +460,6 @@ body {
         font-size: 0.9rem;
     }
 
-    /* Controles de usuario en móvil */
     .user-controls {
         flex: 1 1 100%;
         justify-content: center;
@@ -498,7 +486,6 @@ body {
         font-size: 0.85rem;
     }
 
-    /* Footer responsive */
     .footer-inner {
         flex-direction: column;
         padding: 0 1rem 2rem;
@@ -509,7 +496,6 @@ body {
     }
 }
 
-/* Móviles muy pequeños */
 @media (max-width: 480px) {
     .header-slidemotion {
         padding: 0.5rem;
@@ -533,7 +519,6 @@ body {
         font-size: 0.75rem;
     }
 
-    /* Botones de autenticación en móvil pequeño */
     .auth-controls {
         gap: 0.5rem;
         padding-bottom: 0.5rem;
@@ -544,7 +529,6 @@ body {
         font-size: 0.85rem;
     }
 
-    /* Controles de usuario en móvil pequeño */
     .user-controls {
         flex-wrap: wrap;
         gap: 0.5rem;
@@ -573,7 +557,6 @@ body {
     }
 }
 
-/* Pantallas extra pequeñas */
 @media (max-width: 360px) {
     .logo-link {
         flex-direction: column;

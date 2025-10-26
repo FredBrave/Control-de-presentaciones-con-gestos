@@ -1,103 +1,393 @@
-/* styles.css - Estilos del Visor de Presentaciones */
+/* ============================================
+   PRESENTAR.CSS - Estilos para vista de presentación
+   ============================================ */
 
+/* RESET CRÍTICO - Anular estilos del base.css */
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f3f4f6;
+    background: transparent !important;
 }
 
-/* Contenedor principal del PDF */
-#pdf-container {
-    position: relative;
-    overflow: auto;
-    max-height: 70vh;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    background-color: white;
+body .base-container {
+    background: transparent !important;
+}
+
+body .base-container .main-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    min-height: auto !important;
+}
+
+/* Contenedor principal con gradiente morado */
+.presentar-container {
+    min-height: calc(100vh - 80px) !important;
+    background: linear-gradient(to bottom, 
+        #ffffff 0%, 
+        #ffffff 50%, 
+        #f5f0ff 60%,
+        #ead9ff 75%,
+        #A855F7 100%
+    ) !important;
+    padding: 2rem 1rem 3rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+    font-family: 'Inter', sans-serif !important;
+    box-sizing: border-box !important;
+}
+
+.presentar-content {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+.presentar-card {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    padding: 2.5rem !important;
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15) !important;
+    margin: 0 !important;
+}
+
+/* Título */
+.presentar-title {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    text-align: center !important;
+    margin: 0 0 1.5rem 0 !important;
+    padding: 0 !important;
+}
+
+/* ============================================
+   ALERTAS
+   ============================================ */
+.alert {
+    padding: 1rem !important;
+    margin-bottom: 1.5rem !important;
+    border-radius: 8px !important;
+    border-left: 4px solid !important;
+}
+
+.alert-success {
+    background-color: #d1fae5 !important;
+    border-color: #10b981 !important;
+    color: #065f46 !important;
+}
+
+.alert-warning {
+    background-color: #fef3c7 !important;
+    border-color: #f59e0b !important;
+    color: #92400e !important;
+}
+
+.alert-content {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+}
+
+.alert-icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    flex-shrink: 0 !important;
+}
+
+.alert-text {
+    font-weight: 500 !important;
+    margin: 0 !important;
+    font-size: 0.95rem !important;
+}
+
+/* ============================================
+   CONTROLES
+   ============================================ */
+.controls-section {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    padding: 1.25rem !important;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%) !important;
+    border-radius: 12px !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.info-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+}
+
+.page-info {
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    color: #4b5563 !important;
+}
+
+.zoom-info {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: #3b82f6 !important;
+}
+
+.last-command {
+    font-size: 0.875rem !important;
+    color: #9ca3af !important;
+}
+
+.buttons-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+
+/* Wrapper para PDF con botones laterales */
+.pdf-viewer-wrapper {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* Botones laterales de navegación - MUY IMPORTANTE */
+.btn-nav-side {
+    position: relative !important;
+    background: linear-gradient(135deg, #A855F7 0%, #9333ea 100%) !important;
+    color: white !important;
+    font-weight: 700 !important;
+    padding: 2rem 1rem !important;
+    border-radius: 12px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3) !important;
+    font-size: 1.5rem !important;
+    min-width: 60px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.btn-nav-side:hover:not(:disabled) {
+    background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4) !important;
+}
+
+.btn-nav-side:active:not(:disabled) {
+    transform: translateY(0) scale(0.98) !important;
+}
+
+.btn-nav-side:disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+    background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%) !important;
+}
+
+.btn-nav-prev {
+    order: 1 !important;
+}
+
+.btn-nav-next {
+    order: 3 !important;
+}
+
+.pdf-container {
+    order: 2 !important;
+    flex: 1 !important;
+}
+
+/* Botones de zoom */
+.zoom-buttons {
+    display: flex !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+}
+
+.btn-zoom {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.875rem !important;
+    border-radius: 9999px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    font-size: 0.875rem !important;
+    min-width: 50px !important;
+}
+
+.btn-zoom:hover {
+    background-color: #bfdbfe !important;
+    transform: translateY(-1px) !important;
+}
+
+.btn-zoom-reset {
+    background-color: #2563eb !important;
+    color: white !important;
+}
+
+.btn-zoom-reset:hover {
+    background-color: #1d4ed8 !important;
+}
+
+/* Controles de dibujo */
+.drawing-controls {
+    display: none !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+}
+
+.drawing-controls.active {
+    display: flex !important;
+}
+
+.btn-drawing {
+    background-color: #10b981 !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.875rem !important;
+    border-radius: 9999px !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0.875rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-drawing:hover {
+    background-color: #059669 !important;
+    transform: translateY(-1px) !important;
+}
+
+.btn-clear {
+    background-color: #ef4444 !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.875rem !important;
+    border-radius: 9999px !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0.875rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-clear:hover {
+    background-color: #dc2626 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* ============================================
+   PDF CONTAINER
+   ============================================ */
+.pdf-container {
+    position: relative !important;
+    overflow: auto !important;
+    max-height: 70vh !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    background-color: white !important;
     background-image:
-        linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px);
-    background-size: 20px 20px;
+        linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px) !important;
+    background-size: 20px 20px !important;
+    margin-bottom: 0 !important;
+    scroll-behavior: smooth !important;
 }
 
 #canvas-container {
-    position: relative;
-    display: inline-block;
-    margin: 20px;
+    position: relative !important;
+    display: inline-block !important;
+    margin: 20px !important;
 }
 
-/* Canvas overlays */
-#pointer-overlay, #drawing-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 20;
+#pointer-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+    z-index: 20 !important;
 }
 
 #drawing-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 15;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+    z-index: 15 !important;
 }
 
-/* Estilos del puntero */
+#pdf-canvas {
+    display: block !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+/* ============================================
+   PUNTERO
+   ============================================ */
 .pointer-dot {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    transform: translate(-50%, -50%);
-    transition: all 0.15s ease-out;
-    z-index: 25;
+    position: absolute !important;
+    width: 50px !important;
+    height: 50px !important;
+    transform: translate(-50%, -50%) !important;
+    transition: all 0.15s ease-out !important;
+    z-index: 25 !important;
 }
 
 .pointer-outer {
-    width: 100%;
-    height: 100%;
-    border: 4px solid #00ffff;
-    border-radius: 50%;
-    position: relative;
-    animation: pulse 2s infinite;
+    width: 100% !important;
+    height: 100% !important;
+    border: 4px solid #00ffff !important;
+    border-radius: 50% !important;
+    position: relative !important;
+    animation: pulse 2s infinite !important;
 }
 
 .pointer-inner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 12px;
-    height: 12px;
-    background-color: #ff0000;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 12px !important;
+    height: 12px !important;
+    background-color: #ff0000 !important;
+    border-radius: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.7) !important;
 }
 
 .pointer-crosshair-h {
-    position: absolute;
-    top: 50%;
-    left: -15px;
-    right: -15px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #00ffff, transparent);
-    transform: translateY(-50%);
+    position: absolute !important;
+    top: 50% !important;
+    left: -15px !important;
+    right: -15px !important;
+    height: 2px !important;
+    background: linear-gradient(90deg, transparent, #00ffff, transparent) !important;
+    transform: translateY(-50%) !important;
 }
 
 .pointer-crosshair-v {
-    position: absolute;
-    left: 50%;
-    top: -15px;
-    bottom: -15px;
-    width: 2px;
-    background: linear-gradient(0deg, transparent, #00ffff, transparent);
-    transform: translateX(-50%);
+    position: absolute !important;
+    left: 50% !important;
+    top: -15px !important;
+    bottom: -15px !important;
+    width: 2px !important;
+    background: linear-gradient(0deg, transparent, #00ffff, transparent) !important;
+    transform: translateX(-50%) !important;
 }
 
-/* Variantes del puntero */
 .drawing-pointer {
     border-color: #00ff00 !important;
 }
@@ -120,75 +410,58 @@ body {
     height: 16px !important;
 }
 
-/* Animación del puntero */
 @keyframes pulse {
-    0%, 100% { 
-        opacity: 0.8; 
-        transform: translate(-50%, -50%) scale(1); 
-    }
-    50% { 
-        opacity: 1; 
-        transform: translate(-50%, -50%) scale(1.1); 
-    }
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; transform: scale(1.1); }
 }
 
-/* Estilos del canvas PDF */
-canvas {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: block;
-    border-radius: 0.5rem;
-    transition: all 0.3s ease-in-out;
-    transform-origin: center center;
-    max-width: none;
-    max-height: none;
-}
-
-/* Indicadores de estado */
+/* ============================================
+   INDICADORES
+   ============================================ */
 .zoom-indicator {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    z-index: 30;
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    z-index: 30 !important;
 }
 
 .status-indicator {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 123, 255, 0.9);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: bold;
-    z-index: 30;
-    transition: all 0.3s ease;
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    background: rgba(0, 123, 255, 0.9) !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 15px !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    z-index: 30 !important;
 }
 
-.status-pointer { background: rgba(255, 193, 7, 0.9); }
-.status-zoom { background: rgba(220, 53, 69, 0.9); }
-.status-navigation { background: rgba(40, 167, 69, 0.9); }
-.status-drawing { background: rgba(0, 200, 83, 0.9); }
-.status-erasing { background: rgba(255, 69, 0, 0.9); }
+.status-pointer { background: rgba(255, 193, 7, 0.9) !important; }
+.status-zoom { background: rgba(220, 53, 69, 0.9) !important; }
+.status-navigation { background: rgba(40, 167, 69, 0.9) !important; }
+.status-drawing { background: rgba(0, 200, 83, 0.9) !important; }
+.status-erasing { background: rgba(255, 69, 0, 0.9) !important; }
 
 .drawing-mode-indicator {
-    position: absolute;
-    top: 50px;
-    left: 10px;
-    background: rgba(255, 100, 0, 0.9);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: bold;
-    z-index: 30;
-    display: none;
+    position: absolute !important;
+    top: 50px !important;
+    left: 10px !important;
+    background: rgba(255, 100, 0, 0.9) !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 15px !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    z-index: 30 !important;
+    display: none !important;
 }
 
 .drawing-mode-active {
@@ -196,16 +469,136 @@ canvas {
     display: block !important;
 }
 
-/* Utilidades */
-.scroll-smooth {
-    scroll-behavior: smooth;
+/* ============================================
+   GUÍA DE GESTOS
+   ============================================ */
+.gestures-guide {
+    background: linear-gradient(135deg, #ead9ff 0%, #A855F7 100%) !important;
+    padding: 1.5rem !important;
+    border-radius: 12px !important;
+    border: 2px solid #9333ea !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3) !important;
+    margin-top: 1.5rem !important;
 }
 
-.drawing-controls {
-    display: none;
-    gap: 8px;
+.gestures-title {
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin: 0 0 1rem 0 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
 }
 
-.drawing-controls.active {
-    display: flex;
+.gestures-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+    gap: 1rem !important;
+}
+
+.gesture-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    padding: 0.75rem !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.gesture-item:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.gesture-badge {
+    padding: 0.375rem 0.625rem !important;
+    border-radius: 9999px !important;
+    font-weight: 700 !important;
+    font-size: 0.875rem !important;
+    flex-shrink: 0 !important;
+}
+
+.gesture-badge-yellow { background-color: #fef3c7 !important; color: #92400e !important; }
+.gesture-badge-red { background-color: #fecaca !important; color: #991b1b !important; }
+.gesture-badge-green { background-color: #d1fae5 !important; color: #065f46 !important; }
+.gesture-badge-purple { background-color: #e9d5ff !important; color: #6b21a8 !important; }
+.gesture-badge-blue { background-color: #dbeafe !important; color: #1e40af !important; }
+.gesture-badge-orange { background-color: #fed7aa !important; color: #9a3412 !important; }
+
+.gesture-text {
+    font-size: 0.75rem !important;
+    color: #4b5563 !important;
+    line-height: 1.4 !important;
+}
+
+.gesture-text strong {
+    color: #1f2937 !important;
+}
+
+/* ============================================
+   ERROR
+   ============================================ */
+.error-message {
+    text-align: center !important;
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    padding: 1.5rem !important;
+    border-radius: 8px !important;
+    margin-top: 1.5rem !important;
+}
+
+.error-message p {
+    margin: 0 !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+    .controls-section {
+        flex-direction: column !important;
+    }
+    
+    .info-section,
+    .buttons-section {
+        width: 100% !important;
+        align-items: center !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .presentar-container {
+        padding: 1rem 0.5rem 2rem !important;
+    }
+    
+    .presentar-card {
+        padding: 1.5rem !important;
+    }
+    
+    .presentar-title {
+        font-size: 1.5rem !important;
+    }
+    
+    .pdf-viewer-wrapper {
+        flex-direction: column !important;
+    }
+    
+    .btn-nav-side {
+        width: 100% !important;
+        padding: 1rem !important;
+        order: initial !important;
+    }
+    
+    .pdf-container {
+        order: initial !important;
+        width: 100% !important;
+    }
+    
+    .gestures-grid {
+        grid-template-columns: 1fr !important;
+    }
 }

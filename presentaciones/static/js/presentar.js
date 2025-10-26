@@ -1,10 +1,21 @@
+// ============================================
+// PRESENTAR.JS - Control de presentación con gestos
+// ============================================
 
+console.log('Iniciando presentar.js...');
+
+// Configurar worker de PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js';
 
+// ============================================
+// VARIABLES GLOBALES DE URL
+// ============================================
 const url = typeof PDF_URL !== 'undefined' ? PDF_URL : '';
 const comandoGestoUrl = typeof COMANDO_GESTO_URL !== 'undefined' ? COMANDO_GESTO_URL : '/presentaciones/comando_gesto/';
 
-
+// ============================================
+// VARIABLES DE ESTADO
+// ============================================
 let pdfDoc = null;
 let currentPage = 1;
 let baseScale = 1.5;
@@ -27,20 +38,27 @@ let moveStartY = 0;
 let moveOffsetX = 0;
 let moveOffsetY = 0;
 
-
+// ============================================
+// ELEMENTOS DEL DOM
+// ============================================
 const canvas = document.getElementById("pdf-canvas");
 const drawingCanvas = document.getElementById("drawing-canvas");
-const ctx = canvas.getContext("2d");
-const drawingCtx = drawingCanvas.getContext("2d");
+const ctx = canvas ? canvas.getContext("2d") : null;
+const drawingCtx = drawingCanvas ? drawingCanvas.getContext("2d") : null;
 const canvasContainer = document.getElementById("canvas-container");
 const pageInfoDisplay = document.getElementById("page-info");
 const zoomInfoDisplay = document.getElementById("zoom-info");
 const lastCommandDisplay = document.getElementById("last-command");
+
+// CORREGIDO: Usar los IDs correctos del HTML
 const prevButton = document.getElementById("prev-page");
 const nextButton = document.getElementById("next-page");
 const zoomInButton = document.getElementById("zoom-in");
 const zoomOutButton = document.getElementById("zoom-out");
 const resetZoomButton = document.getElementById("reset-zoom");
+const toggleDrawingButton = document.getElementById("toggle-drawing");
+const clearDrawingsButton = document.getElementById("clear-drawings");
+
 const errorMessage = document.getElementById("error-message");
 const pointerDot = document.getElementById("pointer-dot");
 const pdfContainer = document.getElementById("pdf-container");
@@ -48,11 +66,13 @@ const modeIndicator = document.getElementById("mode-indicator");
 const drawingModeIndicator = document.getElementById("drawing-mode-indicator");
 const zoomIndicator = document.getElementById("zoom-indicator");
 const drawingControls = document.getElementById("drawing-controls");
-const toggleDrawingButton = document.getElementById("toggle-drawing");
-const clearDrawingsButton = document.getElementById("clear-drawings");
 
-
+// ============================================
+// FUNCIONES DE ACTUALIZACIÓN DE UI
+// ============================================
 const updateModeIndicator = (mode) => {
+    if (!modeIndicator) return;
+    
     currentMode = mode;
     modeIndicator.className = 'status-indicator';
     
@@ -73,6 +93,10 @@ const updateModeIndicator = (mode) => {
             modeIndicator.className += ' status-erasing';
             modeIndicator.textContent = 'BORRANDO';
             break;
+        case 'moving':
+            modeIndicator.className += ' status-pointer';
+            modeIndicator.textContent = 'MOVIENDO';
+            break;
         default:
             modeIndicator.className += ' status-navigation';
             modeIndicator.textContent = 'NAVEGACIÓN';
@@ -82,29 +106,43 @@ const updateModeIndicator = (mode) => {
 const updateDrawingModeIndicator = (active) => {
     drawingMode = active;
     
-    if (active) {
-        drawingModeIndicator.textContent = 'MODO DIBUJO: ON';
-        drawingModeIndicator.classList.add('drawing-mode-active');
-        drawingControls.classList.add('active');
-    } else {
-        drawingModeIndicator.textContent = 'MODO DIBUJO: OFF';
-        drawingModeIndicator.classList.remove('drawing-mode-active');
-        drawingControls.classList.remove('active');
-        isDrawing = false;
-        isErasing = false;
-        currentStroke = null;
+    if (drawingModeIndicator) {
+        if (active) {
+            drawingModeIndicator.textContent = 'MODO DIBUJO: ON';
+            drawingModeIndicator.classList.add('drawing-mode-active');
+        } else {
+            drawingModeIndicator.textContent = 'MODO DIBUJO: OFF';
+            drawingModeIndicator.classList.remove('drawing-mode-active');
+            isDrawing = false;
+            isErasing = false;
+            currentStroke = null;
+        }
+    }
+    
+    if (drawingControls) {
+        if (active) {
+            drawingControls.classList.add('active');
+        } else {
+            drawingControls.classList.remove('active');
+        }
     }
 };
 
 const updateZoomDisplay = () => {
     const totalZoom = baseScale * gestureZoom;
     const zoomPercentage = Math.round(totalZoom * 100 / 1.5);
-    zoomInfoDisplay.textContent = `Zoom: ${zoomPercentage}%`;
-    zoomIndicator.textContent = `${zoomPercentage}%`;
+    
+    if (zoomInfoDisplay) {
+        zoomInfoDisplay.textContent = `Zoom: ${zoomPercentage}%`;
+    }
+    if (zoomIndicator) {
+        zoomIndicator.textContent = `${zoomPercentage}%`;
+    }
 };
 
-
 const updatePointer = (x, y, active = true, mode = 'pointer') => {
+    if (!canvas || !canvasContainer || !pointerDot) return;
+    
     pointerX = Math.max(0, Math.min(1, x));
     pointerY = Math.max(0, Math.min(1, y));
     isPointerActive = active;
@@ -127,17 +165,22 @@ const updatePointer = (x, y, active = true, mode = 'pointer') => {
             pointerDot.classList.add('erasing-pointer');
         }
 
-        const modeText = drawingMode ? `(Modo Dibujo)` : '';
-        lastCommandDisplay.textContent = `Puntero ${mode}: (${(pointerX*100).toFixed(1)}%, ${(pointerY*100).toFixed(1)}%) ${modeText}`;
+        if (lastCommandDisplay) {
+            const modeText = drawingMode ? `(Modo Dibujo)` : '';
+            lastCommandDisplay.textContent = `Puntero ${mode}: (${(pointerX*100).toFixed(1)}%, ${(pointerY*100).toFixed(1)}%) ${modeText}`;
+        }
     } else {
         pointerDot.style.display = 'none';
         if (currentMode === 'pointer') updateModeIndicator('navigation');
     }
 };
 
-
-
+// ============================================
+// FUNCIONES DE DIBUJO
+// ============================================
 const initializeDrawingCanvas = () => {
+    if (!drawingCanvas || !canvas) return;
+    
     drawingCanvas.width = canvas.width;
     drawingCanvas.height = canvas.height;
     drawingCanvas.style.position = 'absolute';
@@ -146,13 +189,17 @@ const initializeDrawingCanvas = () => {
     drawingCanvas.style.pointerEvents = 'none';
     drawingCanvas.style.zIndex = '15';
     
-    drawingCtx.lineCap = 'round';
-    drawingCtx.lineJoin = 'round';
-    drawingCtx.strokeStyle = '#ff0000';
-    drawingCtx.lineWidth = 3;
+    if (drawingCtx) {
+        drawingCtx.lineCap = 'round';
+        drawingCtx.lineJoin = 'round';
+        drawingCtx.strokeStyle = '#ff0000';
+        drawingCtx.lineWidth = 3;
+    }
 };
 
 const redrawCanvas = () => {
+    if (!drawingCtx || !drawingCanvas) return;
+    
     drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
 
     if (isMoving) {
@@ -200,11 +247,8 @@ const redrawCanvas = () => {
     drawingCtx.globalCompositeOperation = 'source-over';
 };
 
-
-
-
 const startDrawing = (x, y) => {
-    if (!drawingMode) return;
+    if (!drawingMode || !drawingCtx) return;
     
     if (isErasing) {
         stopErasing();
@@ -222,7 +266,8 @@ const startDrawing = (x, y) => {
 };
 
 const addDrawingPoint = (x, y) => {
-    if (!drawingMode || !isDrawing || !currentStroke) return;
+    if (!drawingMode || !isDrawing || !currentStroke || !drawingCtx || !drawingCanvas) return;
+    
     currentStroke.points.push({ x, y });
     
     drawingCtx.strokeStyle = currentStroke.color;
@@ -237,6 +282,7 @@ const addDrawingPoint = (x, y) => {
         drawingCtx.stroke();
     }
 };
+
 const stopDrawing = () => {
     if (!drawingMode || !isDrawing || !currentStroke) return;
     isDrawing = false;
@@ -251,7 +297,7 @@ const stopDrawing = () => {
 };
 
 const startErasing = (x, y) => {
-    if (!drawingMode) return;
+    if (!drawingMode || !drawingCtx) return;
 
     if (isDrawing) {
         stopDrawing();
@@ -266,8 +312,10 @@ const startErasing = (x, y) => {
     };
     updateModeIndicator('erasing');
 };
+
 const addErasePoint = (x, y) => {
-    if (!drawingMode || !isErasing || !currentStroke) return;
+    if (!drawingMode || !isErasing || !currentStroke || !drawingCtx || !drawingCanvas) return;
+    
     currentStroke.points.push({ x, y });
     
     drawingCtx.lineWidth = currentStroke.width;
@@ -281,6 +329,7 @@ const addErasePoint = (x, y) => {
         drawingCtx.stroke();
     }
 };
+
 const stopErasing = () => {
     if (!drawingMode || !isErasing || !currentStroke) return;
     isErasing = false;
@@ -292,16 +341,23 @@ const stopErasing = () => {
         drawingPaths.get(currentPage).push(currentStroke);
     }
     currentStroke = null;
-    drawingCtx.globalCompositeOperation = 'source-over';
+    if (drawingCtx) {
+        drawingCtx.globalCompositeOperation = 'source-over';
+    }
 };
 
 const clearPageDrawings = () => {
     drawingPaths.delete(currentPage);
-    drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    if (drawingCtx && drawingCanvas) {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
 };
 
+// ============================================
+// FUNCIONES DE RENDERIZADO PDF
+// ============================================
 const calculateAndSetBaseScale = async () => {
-    if (!pdfDoc) return;
+    if (!pdfDoc || !pdfContainer) return;
     
     try {
         const page = await pdfDoc.getPage(currentPage);
@@ -316,7 +372,7 @@ const calculateAndSetBaseScale = async () => {
 };
 
 const renderPage = async (num, shouldScroll = false, scrollX = 0, scrollY = 0) => {
-    if (!pdfDoc || num < 1 || num > pdfDoc.numPages) return;
+    if (!pdfDoc || num < 1 || num > pdfDoc.numPages || !canvas || !ctx) return;
 
     try {
         const page = await pdfDoc.getPage(num);
@@ -325,23 +381,34 @@ const renderPage = async (num, shouldScroll = false, scrollX = 0, scrollY = 0) =
 
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-        drawingCanvas.width = canvas.width;
-        drawingCanvas.height = canvas.height;
+        
+        if (drawingCanvas) {
+            drawingCanvas.width = canvas.width;
+            drawingCanvas.height = canvas.height;
+        }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
         currentPage = num;
-        pageInfoDisplay.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
+        
+        if (pageInfoDisplay) {
+            pageInfoDisplay.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
+        }
         updateZoomDisplay();
 
-        prevButton.disabled = currentPage <= 1;
-        nextButton.disabled = currentPage >= pdfDoc.numPages;
+        // CORREGIDO: Verificar que los botones existen antes de modificarlos
+        if (prevButton) {
+            prevButton.disabled = currentPage <= 1;
+        }
+        if (nextButton) {
+            nextButton.disabled = currentPage >= pdfDoc.numPages;
+        }
 
         initializeDrawingCanvas();
         redrawCanvas();
 
-        if (shouldScroll) {
+        if (shouldScroll && pdfContainer) {
             pdfContainer.scrollTo({ left: scrollX, top: scrollY, behavior: 'smooth' });
         }
         
@@ -349,8 +416,10 @@ const renderPage = async (num, shouldScroll = false, scrollX = 0, scrollY = 0) =
 
     } catch (err) {
         console.error("Error al renderizar la página:", err);
-        errorMessage.textContent = "Error al renderizar la página.";
-        errorMessage.classList.remove('hidden');
+        if (errorMessage) {
+            errorMessage.textContent = "Error al renderizar la página.";
+            errorMessage.style.display = 'block';
+        }
     }
 };
 
@@ -361,28 +430,39 @@ const loadPdf = async () => {
         
         await calculateAndSetBaseScale();
         await renderPage(currentPage);
-        errorMessage.classList.add('hidden');
+        
+        if (errorMessage) {
+            errorMessage.style.display = 'none';
+        }
     } catch (err) {
         console.error("Error al cargar el documento:", err);
-        errorMessage.classList.remove('hidden');
+        if (errorMessage) {
+            errorMessage.style.display = 'block';
+        }
     }
 };
 
-
+// ============================================
+// FUNCIONES DE NAVEGACIÓN
+// ============================================
 const goToPrevPage = () => {
     if (currentPage > 1) renderPage(currentPage - 1);
 };
 
 const goToNextPage = () => {
-    if (currentPage < pdfDoc.numPages) renderPage(currentPage + 1);
+    if (pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage + 1);
 };
 
-
+// ============================================
+// FUNCIONES DE ZOOM
+// ============================================
 const zoomIn = () => setGestureZoom(gestureZoom + 0.2);
 const zoomOut = () => setGestureZoom(gestureZoom - 0.2);
 const resetZoom = () => setGestureZoom(1.0);
 
 const setGestureZoom = async (zoomLevel, centerX = pointerX, centerY = pointerY) => {
+    if (!pdfContainer || !canvas) return;
+    
     const oldGestureZoom = gestureZoom;
     gestureZoom = Math.max(0.3, Math.min(4.0, zoomLevel));
     updateModeIndicator('zoom');
@@ -408,10 +488,14 @@ const setGestureZoom = async (zoomLevel, centerX = pointerX, centerY = pointerY)
         behavior: 'auto'
     });
 
-    lastCommandDisplay.textContent = `Zoom: ${Math.round(gestureZoom * 100)}% en punto (${(centerX * 100).toFixed(1)}%, ${(centerY * 100).toFixed(1)}%)`;
+    if (lastCommandDisplay) {
+        lastCommandDisplay.textContent = `Zoom: ${Math.round(gestureZoom * 100)}% en punto (${(centerX * 100).toFixed(1)}%, ${(centerY * 100).toFixed(1)}%)`;
+    }
 };
 
-
+// ============================================
+// EVENT LISTENERS DE BOTONES
+// ============================================
 if (prevButton) prevButton.addEventListener("click", goToPrevPage);
 if (nextButton) nextButton.addEventListener("click", goToNextPage);
 if (zoomInButton) zoomInButton.addEventListener("click", zoomIn);
@@ -420,6 +504,9 @@ if (resetZoomButton) resetZoomButton.addEventListener("click", resetZoom);
 if (toggleDrawingButton) toggleDrawingButton.addEventListener("click", () => updateDrawingModeIndicator(!drawingMode));
 if (clearDrawingsButton) clearDrawingsButton.addEventListener("click", clearPageDrawings);
 
+// ============================================
+// EVENT LISTENERS DE TECLADO
+// ============================================
 document.addEventListener("keydown", (event) => {
     switch(event.key) {
         case "ArrowLeft":
@@ -461,7 +548,9 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-
+// ============================================
+// SISTEMA DE COOLDOWNS
+// ============================================
 const clientCooldowns = {
     next: { last: 0, duration: 2000 },
     prev: { last: 0, duration: 2000 },
@@ -499,41 +588,41 @@ const getRemainingCooldown = (commandType) => {
     return Math.max(0, cooldown.duration - timePassed);
 };
 
-
+// ============================================
+// PROCESAMIENTO DE COMANDOS
+// ============================================
 const processCommand = (comando) => {
     const currentTime = Date.now();
     
     if (comando === "next") {
         if (canProcessCommand('next')) {
             goToNextPage();
-            lastCommandDisplay.textContent = "✓ Página siguiente";
+            if (lastCommandDisplay) lastCommandDisplay.textContent = "✓ Página siguiente";
             updateModeIndicator('navigation');
         } else {
             const remaining = getRemainingCooldown('next');
-            lastCommandDisplay.textContent = `⏳ Cooldown navegación: ${(remaining/1000).toFixed(1)}s`;
+            if (lastCommandDisplay) lastCommandDisplay.textContent = `⏳ Cooldown navegación: ${(remaining/1000).toFixed(1)}s`;
         }
     } 
     else if (comando === "prev") {
         if (canProcessCommand('prev')) {
             goToPrevPage();
-            lastCommandDisplay.textContent = "✓ Página anterior";
+            if (lastCommandDisplay) lastCommandDisplay.textContent = "✓ Página anterior";
             updateModeIndicator('navigation');
         } else {
             const remaining = getRemainingCooldown('prev');
-            lastCommandDisplay.textContent = `⏳ Cooldown navegación: ${(remaining/1000).toFixed(1)}s`;
+            if (lastCommandDisplay) lastCommandDisplay.textContent = `⏳ Cooldown navegación: ${(remaining/1000).toFixed(1)}s`;
         }
     } 
-    
     else if (comando === "toggle_draw_mode") {
         if (canProcessCommand('toggle_draw_mode')) {
             updateDrawingModeIndicator(!drawingMode);
-            lastCommandDisplay.textContent = `✓ Modo dibujo: ${drawingMode ? 'ACTIVADO' : 'DESACTIVADO'}`;
+            if (lastCommandDisplay) lastCommandDisplay.textContent = `✓ Modo dibujo: ${drawingMode ? 'ACTIVADO' : 'DESACTIVADO'}`;
         } else {
             const remaining = getRemainingCooldown('toggle_draw_mode');
-            lastCommandDisplay.textContent = `⏳ Cooldown modo dibujo: ${(remaining/1000).toFixed(1)}s`;
+            if (lastCommandDisplay) lastCommandDisplay.textContent = `⏳ Cooldown modo dibujo: ${(remaining/1000).toFixed(1)}s`;
         }
     }
-    
     else if (comando.startsWith("puntero_")) {
         if (canProcessCommand('puntero')) {
             const parts = comando.split("_");
@@ -547,7 +636,6 @@ const processCommand = (comando) => {
             }
         }
     }
-    
     else if (comando.startsWith("start_draw_")) {
         if (canProcessCommand('start_draw')) {
             const parts = comando.split("_");
@@ -588,7 +676,6 @@ const processCommand = (comando) => {
             }
         }
     }
-    
     else if (comando.startsWith("start_erase_")) {
         if (canProcessCommand('start_erase')) {
             const parts = comando.split("_");
@@ -629,15 +716,13 @@ const processCommand = (comando) => {
             }
         }
     }
-    
     else if (comando === "clear_drawings") {
         if (canProcessCommand('clear_drawings')) {
             clearPageDrawings();
-            lastCommandDisplay.textContent = "✓ Dibujos limpiados";
+            if (lastCommandDisplay) lastCommandDisplay.textContent = "✓ Dibujos limpiados";
             updateModeIndicator('pointer');
         }
     }
-    
     else if (comando.startsWith("zoom_")) {
         if (canProcessCommand('zoom')) {
             const parts = comando.split("_");
@@ -652,13 +737,11 @@ const processCommand = (comando) => {
             }
         } else {
             const remaining = getRemainingCooldown('zoom');
-            if (remaining > 50) {
+            if (remaining > 50 && lastCommandDisplay) {
                 lastCommandDisplay.textContent = `⏳ Cooldown zoom: ${remaining}ms`;
             }
         }
-        
     }
-
     else if (comando.startsWith("start_move_")) {
         const parts = comando.split("_");
         isMoving = true;
@@ -667,7 +750,7 @@ const processCommand = (comando) => {
         moveOffsetX = 0;
         moveOffsetY = 0;
         updateModeIndicator('moving');
-        lastCommandDisplay.textContent = "👌 Agarrando dibujo...";
+        if (lastCommandDisplay) lastCommandDisplay.textContent = "👌 Agarrando dibujo...";
     }
     else if (comando.startsWith("moving_")) {
         if (!isMoving) return;
@@ -679,7 +762,7 @@ const processCommand = (comando) => {
         moveOffsetY = currentY - moveStartY;
         
         redrawCanvas();
-        lastCommandDisplay.textContent = `Moviendo: dx=${(moveOffsetX*100).toFixed(1)}%, dy=${(moveOffsetY*100).toFixed(1)}%`;
+        if (lastCommandDisplay) lastCommandDisplay.textContent = `Moviendo: dx=${(moveOffsetX*100).toFixed(1)}%, dy=${(moveOffsetY*100).toFixed(1)}%`;
     }
     else if (comando === "stop_move") {
         if (!isMoving) return;
@@ -700,165 +783,5 @@ const processCommand = (comando) => {
         
         redrawCanvas();
         updateModeIndicator('pointer');
-        lastCommandDisplay.textContent = "✓ Dibujo movido";
+        if (lastCommandDisplay) lastCommandDisplay.textContent = "Dibujo movido";
     }
-    
-    return currentTime;
-};
-
-
-let lastCommandTime = Date.now();
-let consecutiveErrors = 0;
-
-const startPolling = () => {
-    setInterval(async () => {
-        try {
-            let res;
-            try {
-                res = await fetch(comandoGestoUrl, {
-                    method: 'GET',
-                    cache: 'no-cache',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                consecutiveErrors = 0;
-            } catch (e) {
-                consecutiveErrors++;
-                if (consecutiveErrors < 5) {
-                    console.log("Backend no disponible, reintentando...");
-                }
-                return;
-            }
-
-            if (res.ok) {
-                const data = await res.json();
-                const comando = data.comando;
-                
-                if (comando && comando.trim() !== '') {
-                    lastCommandTime = processCommand(comando);
-                } else {
-                    if ((currentMode === 'zoom' || currentMode === 'drawing' || currentMode === 'erasing') && 
-                        Date.now() - lastCommandTime > 2000) {
-                        updateModeIndicator('navigation');
-                    }
-                }
-            } else {
-                console.error("Error del servidor:", res.status);
-                lastCommandDisplay.textContent = `Error servidor: ${res.status}`;
-            }
-        } catch (err) {
-            if (consecutiveErrors <= 5) {
-                console.error("Error al obtener comando:", err);
-                lastCommandDisplay.textContent = "Error de conexión";
-            }
-        }
-    }, 100);
-};
-
-
-const handleResize = async () => {
-    if (pdfDoc && currentPage) {
-        await calculateAndSetBaseScale(); 
-        renderPage(currentPage);
-    }
-};
-
-document.addEventListener('wheel', (e) => {
-    if (e.ctrlKey) e.preventDefault();
-}, { passive: false });
-
-window.addEventListener('resize', handleResize);
-
-
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('Inicializando visor de presentaciones...');
-    console.log('PDF URL:', url);
-    console.log('Comando Gesto URL:', comandoGestoUrl);
-    
-    if (!url || url === '') {
-        console.error('No se proporcionó URL del PDF');
-        errorMessage.textContent = 'Error: No se proporcionó un archivo PDF';
-        errorMessage.classList.remove('hidden');
-        return;
-    }
-    
-    loadPdf();
-    updateModeIndicator('navigation');
-    updateDrawingModeIndicator(false);
-    updatePointer(0.5, 0.5, false);
-    
-    startPolling();
-    
-    console.log('Visor inicializado correctamente');
-});
-
-
-
-document.getElementById('restart-detector')?.addEventListener('click', async () => {
-    try {
-        await fetch('/presentaciones/detector/detener/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        });
-        
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const response = await fetch('/presentaciones/detector/iniciar/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alert('Detector reiniciado correctamente');
-            location.reload();
-        } else {
-            alert('Error al reiniciar: ' + data.message);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al reiniciar el detector');
-    }
-});
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-
-
-window.addEventListener('beforeunload', async (e) => {
-    navigator.sendBeacon('/presentaciones/detector/detener/');
-});
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        if (confirm('¿Deseas cerrar la presentación y detener el detector?')) {
-            fetch('/presentaciones/detector/detener/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                }
-            }).then(() => {
-                window.location.href = '/presentaciones/';
-            });
-        }
-    }
-});
