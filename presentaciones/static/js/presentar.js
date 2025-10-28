@@ -50,7 +50,6 @@ const pageInfoDisplay = document.getElementById("page-info");
 const zoomInfoDisplay = document.getElementById("zoom-info");
 const lastCommandDisplay = document.getElementById("last-command");
 
-// CORREGIDO: Usar los IDs correctos del HTML
 const prevButton = document.getElementById("prev-page");
 const nextButton = document.getElementById("next-page");
 const zoomInButton = document.getElementById("zoom-in");
@@ -163,6 +162,8 @@ const updatePointer = (x, y, active = true, mode = 'pointer') => {
             pointerDot.classList.add('drawing-pointer');
         } else if (mode === 'erasing') {
             pointerDot.classList.add('erasing-pointer');
+        } else if (mode === 'moving') {
+            pointerDot.classList.add('moving-pointer');
         }
 
         if (lastCommandDisplay) {
@@ -397,7 +398,6 @@ const renderPage = async (num, shouldScroll = false, scrollX = 0, scrollY = 0) =
         }
         updateZoomDisplay();
 
-        // CORREGIDO: Verificar que los botones existen antes de modificarlos
         if (prevButton) {
             prevButton.disabled = currentPage <= 1;
         }
@@ -552,18 +552,19 @@ document.addEventListener("keydown", (event) => {
 // SISTEMA DE COOLDOWNS
 // ============================================
 const clientCooldowns = {
-    next: { last: 0, duration: 2000 },
-    prev: { last: 0, duration: 2000 },
-    puntero: { last: 0, duration: 50 },
-    zoom: { last: 0, duration: 100 },
-    reset: { last: 0, duration: 1000 },
-    toggle_draw_mode: { last: 0, duration: 1500 },
-    start_draw: { last: 0, duration: 50 },
-    drawing: { last: 0, duration: 20 },
-    stop_draw: { last: 0, duration: 50 },
-    start_erase: { last: 0, duration: 50 },
-    erasing: { last: 0, duration: 20 },
-    stop_erase: { last: 0, duration: 50 }
+    next: { last: 0, duration: 1500 },
+    prev: { last: 0, duration: 1500 },
+    puntero: { last: 0, duration: 30 },
+    zoom: { last: 0, duration: 80 },
+    reset: { last: 0, duration: 800 },
+    toggle_draw_mode: { last: 0, duration: 1000 },
+    start_draw: { last: 0, duration: 30 },
+    drawing: { last: 0, duration: 15 },
+    stop_draw: { last: 0, duration: 30 },
+    start_erase: { last: 0, duration: 30 },
+    erasing: { last: 0, duration: 15 },
+    stop_erase: { last: 0, duration: 30 },
+    clear_drawings: { last: 0, duration: 800 }
 };
 
 const canProcessCommand = (commandType) => {
@@ -750,6 +751,7 @@ const processCommand = (comando) => {
         moveOffsetX = 0;
         moveOffsetY = 0;
         updateModeIndicator('moving');
+        updatePointer(moveStartX, moveStartY, true, 'moving');
         if (lastCommandDisplay) lastCommandDisplay.textContent = "👌 Agarrando dibujo...";
     }
     else if (comando.startsWith("moving_")) {
@@ -761,6 +763,7 @@ const processCommand = (comando) => {
         moveOffsetX = currentX - moveStartX;
         moveOffsetY = currentY - moveStartY;
         
+        updatePointer(currentX, currentY, true, 'moving');
         redrawCanvas();
         if (lastCommandDisplay) lastCommandDisplay.textContent = `Moviendo: dx=${(moveOffsetX*100).toFixed(1)}%, dy=${(moveOffsetY*100).toFixed(1)}%`;
     }
@@ -783,5 +786,132 @@ const processCommand = (comando) => {
         
         redrawCanvas();
         updateModeIndicator('pointer');
-        if (lastCommandDisplay) lastCommandDisplay.textContent = "Dibujo movido";
+        if (lastCommandDisplay) lastCommandDisplay.textContent = "✓ Dibujo movido";
     }
+    else if (comando === "reset") {
+        if (canProcessCommand('reset')) {
+            resetZoom();
+            if (lastCommandDisplay) lastCommandDisplay.textContent = "✓ Zoom reiniciado";
+            updateModeIndicator('navigation');
+        } else {
+            const remaining = getRemainingCooldown('reset');
+            if (lastCommandDisplay) lastCommandDisplay.textContent = `⏳ Cooldown reset: ${(remaining/1000).toFixed(1)}s`;
+        }
+    }
+    else {
+        console.log("Comando no reconocido:", comando);
+    }
+};
+
+// ============================================
+// POLLING DE COMANDOS DESDE EL SERVIDOR
+// ============================================
+let lastProcessedCommand = null;
+let commandCounter = 0;
+
+const pollForCommands = async () => {
+    try {
+        const response = await fetch(comandoGestoUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Procesar solo si hay comando y es diferente al último procesado
+            if (data.success && data.comando) {
+                // Si es un comando diferente o es un comando de movimiento continuo
+                const isContinuousCommand = data.comando.startsWith('drawing_') || 
+                                           data.comando.startsWith('erasing_') ||
+                                           data.comando.startsWith('moving_') ||
+                                           data.comando.startsWith('puntero_');
+                
+                if (isContinuousCommand || data.comando !== lastProcessedCommand) {
+                    lastProcessedCommand = data.comando;
+                    commandCounter++;
+                    console.log(`[${commandCounter}] Procesando comando:`, data.comando);
+                    processCommand(data.comando);
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Error al consultar comandos:", err);
+    }
+};
+
+// ============================================
+// INICIALIZACIÓN Y POLLING
+// ============================================
+
+// Iniciar polling cada 100ms
+let pollingInterval = null;
+let pollCount = 0;
+
+const startPolling = () => {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+    }
+    pollingInterval = setInterval(() => {
+        pollCount++;
+        if (pollCount % 50 === 0) { // Log cada 5 segundos
+            console.log(`Polling activo: ${pollCount} consultas realizadas`);
+        }
+        pollForCommands();
+    }, 100);
+    console.log('✓ Polling de comandos iniciado (cada 100ms)');
+};
+
+const stopPolling = () => {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+        console.log('Polling de comandos detenido');
+    }
+};
+
+// ============================================
+// MANEJO DE VISIBILIDAD DE LA PÁGINA
+// ============================================
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopPolling();
+    } else {
+        startPolling();
+    }
+});
+
+// ============================================
+// INICIO DE LA APLICACIÓN
+// ============================================
+const initApp = async () => {
+    console.log('Iniciando aplicación de presentación...');
+    
+    if (!url) {
+        console.error("No se proporcionó URL del PDF");
+        if (errorMessage) {
+            errorMessage.textContent = "Error: No se proporcionó URL del PDF";
+            errorMessage.style.display = 'block';
+        }
+        return;
+    }
+    
+    console.log('Cargando PDF desde:', url);
+    await loadPdf();
+    
+    console.log('PDF cargado, iniciando polling de comandos...');
+    startPolling();
+    
+    console.log('✓ Aplicación inicializada correctamente');
+};
+
+// Iniciar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
+
+console.log('presentar.js cargado completamente');

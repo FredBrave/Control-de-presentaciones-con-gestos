@@ -33,7 +33,7 @@ detector_process = None
 detector_thread = None
 detector_running = False
 User = get_user_model()
-ultimo_comando = None
+ultimo_comando = {'comando': None, 'timestamp': 0}
 def safe_remove(path, retries=3, delay=1):
     for i in range(retries):
         try:
@@ -434,10 +434,7 @@ def presentar(request, presentacion_id):
                 time.sleep(0.5)
                 
                 detector_process = subprocess.Popen(
-                    ['python', 'manage.py', 'detectar_gestos'],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines=True
+                    ['python', 'manage.py', 'detectar_gestos']
                 )
                 
                 detector_running = True
@@ -501,10 +498,7 @@ def iniciar_detector(request):
         time.sleep(0.5)
         
         detector_process = subprocess.Popen(
-            ['python', 'manage.py', 'detectar_gestos'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True
+            ['python', 'manage.py', 'detectar_gestos']
         )
         
         detector_running = True
@@ -599,6 +593,7 @@ def verificar_estado_detector(request):
         'status': 'running'
     })
 
+comando_lock = threading.Lock()
 
 @csrf_exempt
 def comando_gesto(request):
@@ -610,8 +605,12 @@ def comando_gesto(request):
             comando = data.get('comando')
             
             if comando:
-                ultimo_comando = comando
-                print(f"[COMANDO] Recibido: {comando}")
+                with comando_lock:
+                    ultimo_comando = {
+                        'comando': comando,
+                        'timestamp': time.time()
+                    }
+                print(f"[COMANDO] Recibido: {comando} @ {ultimo_comando['timestamp']}")
                 return JsonResponse({
                     'success': True,
                     'comando': comando,
@@ -630,18 +629,22 @@ def comando_gesto(request):
             }, status=400)
     
     elif request.method == 'GET':
-        if ultimo_comando:
-            comando_actual = ultimo_comando
-            ultimo_comando = None
-            return JsonResponse({
-                'success': True,
-                'comando': comando_actual
-            })
-        else:
-            return JsonResponse({
-                'success': True,
-                'comando': None
-            })
+        with comando_lock:
+            current_time = time.time()
+            if ultimo_comando['comando'] and (current_time - ultimo_comando['timestamp']) < 2:
+                comando_actual = ultimo_comando['comando']
+                return JsonResponse({
+                    'success': True,
+                    'comando': comando_actual,
+                    'timestamp': ultimo_comando['timestamp']
+                })
+            else:
+                if ultimo_comando['comando']:
+                    ultimo_comando = {'comando': None, 'timestamp': 0}
+                return JsonResponse({
+                    'success': True,
+                    'comando': None
+                })
     
     return JsonResponse({
         'success': False,
