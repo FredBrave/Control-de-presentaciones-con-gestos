@@ -50,11 +50,10 @@ class Command(BaseCommand):
         self.TOLERANCIA_PUNO = 0.035
         self.TOLERANCIA_PAZ = 0.04
         self.TOLERANCIA_CUERNOS = 0.04
-        
-        # Variables para feedback visual del toggle
+
         self.mostrar_feedback_toggle = False
         self.tiempo_inicio_feedback = 0
-        self.duracion_feedback = 0.5  # 500ms
+        self.duracion_feedback = 0.5
 
     def puede_enviar_comando(self, tipo_comando):
         tiempo_actual = time.time()
@@ -72,40 +71,36 @@ class Command(BaseCommand):
         return max(0, tiempo_restante)
 
     def enviar_comando(self, comando, tipo_comando):
-        # 1. Revisa si el cooldown ha pasado
         if not self.puede_enviar_comando(tipo_comando):
             return False
-        # 2. Si puede enviar, lo intenta. El timer NO se ha actualizado todavía.
         try:
             response = requests.post(
                 URL_ACTUALIZAR_COMANDO, 
                 json={"comando": comando},
                 timeout=0.5)
             if response.status_code == 200:
-                # 3. ¡ÉXITO! Ahora SÍ actualizamos el timer.
                 self.ultimos_tiempos[tipo_comando] = time.time() 
 
                 self.errores_consecutivos = 0
                 if tipo_comando in ['next', 'prev', 'toggle_draw_mode', 'clear_drawings']:
-                    self.stdout.write(f"✓ Comando enviado: {comando}")
-                return True # Retorna True
+                    self.stdout.write(f"Comando enviado: {comando}")
+                return True
             else:
-                # El servidor respondió, pero con un error (404, 500, etc.)
                 self.errores_consecutivos += 1
                 if self.errores_consecutivos <= 3:
-                    self.stderr.write(f"⚠ HTTP {response.status_code}")
-                return False # Retorna False (y NO actualiza el timer)
+                    self.stderr.write(f"HTTP {response.status_code}")
+                return False
         except requests.exceptions.Timeout:
             self.errores_consecutivos += 1
             if self.errores_consecutivos == 1:
-                self.stderr.write(f"⏱ Timeouts detectados (normal)")
-            return False # Retorna False (y NO actualiza el timer)
+                self.stderr.write(f"Timeouts detectados (normal)")
+            return False
 
         except requests.exceptions.ConnectionError:
             self.errores_consecutivos += 1
             if self.errores_consecutivos <= 3:
-                self.stderr.write(f"⚠ Error de conexión: {URL_ACTUALIZAR_COMANDO}")
-            return False # Retorna False (y NO actualiza el timer)
+                self.stderr.write(f"Error de conexión: {URL_ACTUALIZAR_COMANDO}")
+            return False
 
         except Exception as e:
             self.errores_consecutivos += 1
@@ -119,7 +114,6 @@ class Command(BaseCommand):
         return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
     def detectar_gesto_paz(self, hand_landmarks):
-        """Detecta gesto de PAZ (índice y medio extendidos formando V)"""
         landmarks = hand_landmarks.landmark
         
         indice_extendido = landmarks[8].y < landmarks[6].y - 0.03
@@ -133,7 +127,6 @@ class Command(BaseCommand):
                 anular_doblado and menique_doblado and pulgar_controlado)
 
     def detectar_gesto_cuernos(self, hand_landmarks):
-        """Detecta gesto de CUERNOS (índice y meñique extendidos)"""
         landmarks = hand_landmarks.landmark
         
         indice_extendido = landmarks[8].y < landmarks[6].y - 0.025
@@ -204,7 +197,6 @@ class Command(BaseCommand):
                 menique_doblado and pulgar_doblado)
 
     def obtener_posicion_puntero(self, hand_landmarks):
-        """Obtiene la posición del puntero desde el centro de la palma"""
         centro_palma = hand_landmarks.landmark[0]
         dedo_medio_mcp = hand_landmarks.landmark[9]
         
@@ -214,7 +206,6 @@ class Command(BaseCommand):
         return centro_x, centro_y
     
     def obtener_posicion_indice(self, hand_landmarks):
-        """Obtiene la posición de la punta del dedo índice para dibujar"""
         indice_tip = hand_landmarks.landmark[8]
         return indice_tip.x, indice_tip.y
 
@@ -249,21 +240,25 @@ class Command(BaseCommand):
         
         return dedos
     
-    def detectar_menique_solo(self, hand_landmarks):
+    def detectar_pulgar_arriba(self, hand_landmarks):
         landmarks = hand_landmarks.landmark
         
-        menique_extendido = landmarks[20].y < landmarks[18].y - 0.04
-        indice_doblado = landmarks[8].y > landmarks[6].y
-        medio_doblado = landmarks[12].y > landmarks[10].y
-        anular_doblado = landmarks[16].y > landmarks[14].y
-        pulgar_doblado = landmarks[4].y > landmarks[3].y
+        pulgar_arriba = landmarks[4].y < landmarks[0].y - 0.1
         
-        menique_mas_alto = (landmarks[20].y < landmarks[8].y and
-                           landmarks[20].y < landmarks[12].y and
-                           landmarks[20].y < landmarks[16].y)
+        pulgar_mas_alto = (landmarks[4].y < landmarks[8].y - margen_seguridad and 
+                        landmarks[4].y < landmarks[12].y - margen_seguridad and
+                        landmarks[4].y < landmarks[16].y - margen_seguridad and
+                        landmarks[4].y < landmarks[20].y - margen_seguridad)
+
+        indice_doblado = landmarks[8].y > landmarks[6].y + 0.02
+        medio_doblado = landmarks[12].y > landmarks[10].y + 0.02
+        anular_doblado = landmarks[16].y > landmarks[14].y + 0.02
+        menique_doblado = landmarks[20].y > landmarks[18].y + 0.02
+
+        orientacion_vertical = landmarks[0].y > landmarks[9].y
         
-        return (menique_extendido and indice_doblado and medio_doblado and 
-                anular_doblado and pulgar_doblado and menique_mas_alto)
+        return (pulgar_arriba and pulgar_mas_alto and orientacion_vertical and
+                indice_doblado and medio_doblado and anular_doblado and menique_doblado)
     
     def detectar_gesto_pinza(self, hand_landmarks, ancho_frame, alto_frame):
         landmarks = hand_landmarks.landmark
@@ -275,14 +270,12 @@ class Command(BaseCommand):
         return distancia < 30
 
     def mostrar_feedback_toggle_modo(self, frame, ancho_frame, alto_frame):
-        """Muestra feedback visual del toggle de modo dibujo"""
         tiempo_actual = time.time()
         
         if self.mostrar_feedback_toggle:
             tiempo_transcurrido = tiempo_actual - self.tiempo_inicio_feedback
             
             if tiempo_transcurrido < self.duracion_feedback:
-                # Calcular alpha para fade out
                 alpha = 1.0 - (tiempo_transcurrido / self.duracion_feedback)
                 overlay = frame.copy()
                 
@@ -388,17 +381,14 @@ class Command(BaseCommand):
                             self.enviar_comando("zoom_1.0_0.5_0.5", 'reset')
                             ultimo_zoom = 1.0
                         
-                        # DETECTAR GESTO PAZ PARA TOGGLE MODO DIBUJO
                         if self.modo_dibujo_activo:
                             if self.detectar_gesto_paz(hand_landmarks):
                                 if self.enviar_comando("toggle_draw_mode", 'toggle_draw_mode'):
-                                    # Cambiar el estado
                                     self.modo_dibujo_activo = not self.modo_dibujo_activo
                                     self.esta_dibujando = False
                                     self.esta_borrando = False
                                     self.esta_moviendo = False
                                     
-                                    # Activar feedback visual
                                     self.mostrar_feedback_toggle = True
                                     self.tiempo_inicio_feedback = time.time()
                                     
@@ -412,23 +402,16 @@ class Command(BaseCommand):
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 165, 255), 2)
                         
                             else:
-                                # En modo dibujo, obtener posición base (palma)
                                 punto_base_x, punto_base_y = self.obtener_posicion_puntero(hand_landmarks)
                                 
-                                # SIEMPRE enviar comando de puntero para mantenerlo visible
-                                comando_puntero = f"puntero_{punto_base_x:.3f}_{punto_base_y:.3f}"
-                                self.enviar_comando(comando_puntero, 'puntero')
-                            
-                                # LIMPIAR DIBUJOS (meñique solo)
-                                if self.detectar_menique_solo(hand_landmarks):
+                                if self.detectar_pulgar_arriba(hand_landmarks):
                                     if self.enviar_comando("clear_drawings", 'clear_drawings'):
-                                        cv2.putText(frame, "LIMPIANDO DIBUJOS 👆", (10, 130),
+                                        cv2.putText(frame, "LIMPIANDO DIBUJOS 👍", (10, 130),
                                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
                                         self.esta_dibujando = False
                                         self.esta_borrando = False
                                         self.esta_moviendo = False
 
-                                # MOVER DIBUJO (pinza: pulgar + índice cerca)
                                 elif self.detectar_gesto_pinza(hand_landmarks, ancho_frame, alto_frame):
                                     if not self.esta_moviendo:
                                         self.esta_moviendo = True
@@ -443,7 +426,6 @@ class Command(BaseCommand):
                                     puntero_px = (int(punto_base_x * ancho_frame), int(punto_base_y * alto_frame))
                                     cv2.circle(frame, puntero_px, 20, (255, 0, 255), 3)
 
-                                # DIBUJAR (gesto de CUERNOS 🤘)
                                 elif self.detectar_gesto_cuernos(hand_landmarks):
                                     draw_x, draw_y = self.obtener_posicion_indice(hand_landmarks)
                                     
@@ -456,21 +438,16 @@ class Command(BaseCommand):
                                         self.esta_borrando = False
                                         comando_draw = f"start_draw_{draw_x:.3f}_{draw_y:.3f}"
                                         self.enviar_comando(comando_draw, 'start_draw')
-                                        comando_puntero_draw = f"puntero_{draw_x:.3f}_{draw_y:.3f}"
-                                        self.enviar_comando(comando_puntero_draw, 'puntero')
                                     else:
                                         comando_draw = f"drawing_{draw_x:.3f}_{draw_y:.3f}"
                                         self.enviar_comando(comando_draw, 'drawing')
-                                        comando_puntero_draw = f"puntero_{draw_x:.3f}_{draw_y:.3f}"
-                                        self.enviar_comando(comando_puntero_draw, 'puntero')
                                     
                                     indice_px = (int(draw_x * ancho_frame), int(draw_y * alto_frame))
                                     cv2.circle(frame, indice_px, 25, (0, 255, 0), -1)
                                     cv2.circle(frame, indice_px, 27, (255, 255, 255), 2)
                                     cv2.line(frame, (indice_px[0] - 10, indice_px[1]), (indice_px[0] + 10, indice_px[1]), (255, 255, 255), 2)
                                     cv2.line(frame, (indice_px[0], indice_px[1] - 10), (indice_px[0], indice_px[1] + 10), (255, 255, 255), 2)
-                            
-                                # BORRAR (mano completamente abierta)
+
                                 elif self.detectar_mano_abierta_completa(hand_landmarks):
                                     if self.esta_moviendo:
                                         self.esta_moviendo = False
@@ -487,7 +464,6 @@ class Command(BaseCommand):
                                     puntero_px = (int(punto_base_x * ancho_frame), int(punto_base_y * alto_frame))
                                     cv2.circle(frame, puntero_px, 25, (0, 0, 255), 4)
                                 
-                                # PUNTERO (puño cerrado)
                                 elif self.detectar_puno(hand_landmarks):
                                     if self.esta_dibujando:
                                         self.esta_dibujando = False
@@ -502,6 +478,9 @@ class Command(BaseCommand):
                                         self.enviar_comando("stop_move", 'stop_move')
                                     
                                     puntero_activo = True
+                                    comando_puntero = f"puntero_{punto_base_x:.3f}_{punto_base_y:.3f}"
+                                    self.enviar_comando(comando_puntero, 'puntero')
+                                    
                                     puntero_px = (int(punto_base_x * ancho_frame), int(punto_base_y * alto_frame))
                                     cv2.circle(frame, puntero_px, 25, (0, 255, 255), 3)
                                     cv2.circle(frame, puntero_px, 5, (0, 0, 255), -1)
@@ -522,7 +501,6 @@ class Command(BaseCommand):
 
                         elif self.detectar_gesto_paz(hand_landmarks):
                             if self.enviar_comando("toggle_draw_mode", 'toggle_draw_mode'):
-                                # Cambiar el estado para ENTRAR
                                 self.modo_dibujo_activo = not self.modo_dibujo_activo
                                 self.esta_dibujando = False
                                 self.esta_borrando = False
@@ -538,13 +516,12 @@ class Command(BaseCommand):
                                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 165, 255), 2)
                         
                         else:
-                            # MODO NAVEGACIÓN NORMAL
                             gesto_pistola = self.detectar_gesto_pistola(hand_landmarks)
                             
                             if gesto_pistola == 'pistola_derecha':
                                 puntero_activo = False
                                 if self.enviar_comando("next", 'next'):
-                                    cv2.putText(frame, "SIGUIENTE >> 👉", (10, 130),
+                                    cv2.putText(frame, "SIGUIENTE >", (10, 130),
                                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                                 else:
                                     tiempo_restante = self.obtener_tiempo_restante('next')
@@ -554,7 +531,7 @@ class Command(BaseCommand):
                             elif gesto_pistola == 'pistola_izquierda':
                                 puntero_activo = False
                                 if self.enviar_comando("prev", 'prev'):
-                                    cv2.putText(frame, "👈 << ANTERIOR", (10, 130),
+                                    cv2.putText(frame, "<< ANTERIOR", (10, 130),
                                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                                 else:
                                     tiempo_restante = self.obtener_tiempo_restante('prev')
@@ -610,10 +587,8 @@ class Command(BaseCommand):
                         self.esta_moviendo = False
                         self.enviar_comando("stop_move", 'stop_move')
 
-                # Mostrar feedback visual del toggle (si está activo)
                 self.mostrar_feedback_toggle_modo(frame, ancho_frame, alto_frame)
                 
-                # INDICADOR VISUAL GRANDE DE MODO DIBUJO (SIEMPRE VISIBLE)
                 if self.modo_dibujo_activo:
                     cv2.rectangle(frame, (0, 0), (ancho_frame, 90), (0, 100, 255), -1)
                     cv2.rectangle(frame, (0, 0), (ancho_frame, 90), (255, 255, 255), 4)
@@ -625,16 +600,16 @@ class Command(BaseCommand):
                                cv2.FONT_HERSHEY_SIMPLEX, 1.3, (255, 255, 255), 3)
                     
                     if self.esta_dibujando:
-                        estado_texto = "DIBUJANDO 🤘"
+                        estado_texto = "DIBUJANDO"
                         color_estado = (0, 255, 0)
                     elif self.esta_borrando:
-                        estado_texto = "BORRANDO 🖐️"
+                        estado_texto = "BORRANDO"
                         color_estado = (0, 165, 255)
                     elif self.esta_moviendo:
-                        estado_texto = "MOVIENDO 👌"
+                        estado_texto = "MOVIENDO"
                         color_estado = (255, 0, 255)
                     else:
-                        estado_texto = "PUNTERO ✊"
+                        estado_texto = "PUNTERO"
                         color_estado = (255, 255, 0)
                     
                     tamaño_estado = cv2.getTextSize(estado_texto, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2)[0]
@@ -654,13 +629,12 @@ class Command(BaseCommand):
                     cv2.putText(frame, texto_nav, (x_nav, 38),
                                cv2.FONT_HERSHEY_SIMPLEX, 1.1, (200, 200, 200), 2)
 
-                # Instrucciones en la parte inferior
                 config_y = alto_frame - 30
                 if not self.modo_dibujo_activo:
-                    cv2.putText(frame, "PAZ ✌️=Activar Dibujo | Pistola 👉=Navegar | Puno ✊=Puntero | 2 Manos=Zoom", 
+                    cv2.putText(frame, "PAZ =Activar Dibujo | Pistola =Navegar | Puno =Puntero | 2 Manos=Zoom", 
                         (10, config_y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 200, 200), 1)
                 else:
-                    cv2.putText(frame, "PAZ ✌️=Salir | CUERNOS 🤘=Dibujar | MANO 🖐️=Borrar | PUNO ✊=Puntero | PINZA 👌=Mover | MENIQUE 👆=Limpiar", 
+                    cv2.putText(frame, "PAZ =Salir | CUERNOS =Dibujar | MANO =Borrar | PUNO =Puntero | PINZA =Mover | MENIQUE =Limpiar", 
                         (10, config_y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
 
                 cv2.imshow("Detector con Gestos Mejorados", frame)

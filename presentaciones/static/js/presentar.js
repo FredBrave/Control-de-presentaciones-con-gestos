@@ -767,15 +767,15 @@ const processCommand = (comando) => {
         redrawCanvas();
         if (lastCommandDisplay) lastCommandDisplay.textContent = `Moviendo: dx=${(moveOffsetX*100).toFixed(1)}%, dy=${(moveOffsetY*100).toFixed(1)}%`;
     }
-    else if (comando === "stop_move") {
+    else if (comando === "stop_move" || comando.startsWith("stop_move_")) {
         if (!isMoving) return;
         
         const pageDrawings = drawingPaths.get(currentPage);
-        if (pageDrawings) {
+        if (pageDrawings && (moveOffsetX !== 0 || moveOffsetY !== 0)) {
             pageDrawings.forEach(path => {
                 path.points.forEach(point => {
-                    point.x += moveOffsetX;
-                    point.y += moveOffsetY;
+                    point.x = Math.max(0, Math.min(1, point.x + moveOffsetX));
+                    point.y = Math.max(0, Math.min(1, point.y + moveOffsetY));
                 });
             });
         }
@@ -785,8 +785,9 @@ const processCommand = (comando) => {
         moveOffsetY = 0;
         
         redrawCanvas();
-        updateModeIndicator('pointer');
-        if (lastCommandDisplay) lastCommandDisplay.textContent = "✓ Dibujo movido";
+        updateModeIndicator('navigation');
+        updatePointer(pointerX, pointerY, false);
+        if (lastCommandDisplay) lastCommandDisplay.textContent = "✓ Dibujo soltado";
     }
     else if (comando === "reset") {
         if (canProcessCommand('reset')) {
