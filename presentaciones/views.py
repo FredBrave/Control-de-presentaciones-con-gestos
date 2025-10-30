@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 import os, cv2
 import traceback
 import logging
+from googleapiclient.http import MediaIoBaseDownload
+from io import BytesIO
+from .google_drive_oauth import get_drive_service
 from django.core.files import File
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -11,6 +14,7 @@ from google.oauth2 import service_account
 from .google_drive_oauth import get_or_create_user_folder, upload_to_drive
 from googleapiclient.discovery import build
 import tempfile
+import comtypes.client
 from django.http import JsonResponse
 from django.urls import reverse
 from CPG import settings
@@ -26,7 +30,7 @@ from .google_slides_import import (
 )
 from django.views.decorators.csrf import csrf_exempt
 import json
-
+from googleapiclient.errors import HttpError
 # Variables Globales
 logger = logging.getLogger(__name__)
 detector_process = None
@@ -148,7 +152,6 @@ def uploadPage(request):
                         return redirect('presentaciones:upload')
                     
                     try:
-                        import comtypes.client
                         pdf_path = tmp_path.replace('.pptx', '.pdf')
                         powerpoint = comtypes.client.CreateObject("PowerPoint.Application")
                         powerpoint.Visible = 0
@@ -398,18 +401,121 @@ detector_thread = None
 detector_running = False
 
 
+def limpiar_carpeta_temp():
+    temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+    
+    if os.path.exists(temp_dir):
+        try:
+            for filename in os.listdir(temp_dir):
+                file_path = os.path.join(temp_dir, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                        print(f"Eliminado: {filename}")
+                except Exception as e:
+                    print(f"Error al eliminar {filename}: {e}")
+        except Exception as e:
+            print(f"Error al limpiar carpeta temp: {e}")
+    else:
+        os.makedirs(temp_dir, exist_ok=True)
+
 @login_required
 def presentar(request, presentacion_id):
     presentacion = get_object_or_404(Presentacion, id=presentacion_id, usuario=request.user)
     
-    tipo_almacenamiento = 'drive' if presentacion.enlace_drive else 'local'
-    
+    tipo_almacenamiento = presentacion.ubicacion
     url_pdf = None
     tipo_archivo = None
     
     if tipo_almacenamiento == 'drive':
-        url_pdf = presentacion.enlace_drive
-        tipo_archivo = 'drive'
+        limpiar_carpeta_temp()
+        
+        try:
+            
+            temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            service = get_drive_service()
+            
+            try:
+                file_metadata = service.files().get(
+                    fileId=presentacion.drive_id, 
+                    fields='name,mimeType'
+                ).execute()
+            except HttpError as error:
+                if error.resp.status == 404:
+                    messages.error(
+                        request, 
+                        f'El archivo "{presentacion.nombre}" ya no existe en Google Drive. '
+                        'Por favor, elimínalo de tu biblioteca o vuelve a importarlo.'
+                    )
+                    return redirect('presentaciones:home')
+                elif error.resp.status == 403:
+                    messages.error(
+                        request,
+                        f'No tienes permisos para acceder a "{presentacion.nombre}". '
+                        'Verifica los permisos en Google Drive o vuelve a autorizar la aplicación.'
+                    )
+                    return redirect('presentaciones:home')
+                else:
+                    messages.error(
+                        request,
+                        f'Error al conectar con Google Drive: {error.error_details}. '
+                        'Por favor, intenta nuevamente más tarde.'
+                    )
+                    return redirect('presentaciones:home')
+            
+            file_name = file_metadata.get('name', f'presentacion_{presentacion.id}')
+            mime_type = file_metadata.get('mimeType', '')
+            
+            if 'presentation' in mime_type or 'slides' in mime_type:
+                file_path = os.path.join(temp_dir, f'{presentacion.id}.pdf')
+                request_export = service.files().export_media(
+                    fileId=presentacion.drive_id,
+                    mimeType='application/pdf'
+                )
+                tipo_archivo = 'pdf'
+            else:
+                extension = file_name.split('.')[-1].lower() if '.' in file_name else 'pdf'
+                file_path = os.path.join(temp_dir, f'{presentacion.id}.{extension}')
+                request_export = service.files().get_media(fileId=presentacion.drive_id)
+                tipo_archivo = extension
+            
+            with open(file_path, 'wb') as f:
+                fh = BytesIO()
+                downloader = MediaIoBaseDownload(fh, request_export)
+                done = False
+                
+                while not done:
+                    status, done = downloader.next_chunk()
+                
+                fh.seek(0)
+                f.write(fh.read())
+            
+            relative_path = os.path.join('temp', f'{presentacion.id}.{tipo_archivo}')
+            url_pdf = os.path.join(settings.MEDIA_URL, relative_path).replace('\\', '/')
+            
+            messages.success(request, f'Presentación "{presentacion.nombre}" cargada correctamente.')
+            
+        except HttpError as e:
+            print(f"Error de Google Drive API: {e}")
+            messages.error(
+                request,
+                f'Error al acceder a Google Drive. '
+                'Por favor, verifica tu conexión a internet e intenta nuevamente.'
+            )
+            return redirect('presentaciones:home')
+        except Exception as e:
+            print(f"Error al descargar archivo de Drive: {e}")
+            import traceback
+            traceback.print_exc()
+            messages.error(
+                request,
+                f'Error inesperado al cargar la presentación. '
+                'Por favor, contacta al administrador si el problema persiste.'
+            )
+            return redirect('presentaciones:home')
+            
     else:
         if presentacion.archivo_local:
             extension = presentacion.archivo_local.name.split('.')[-1].lower()

@@ -7,12 +7,34 @@
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 <link rel="stylesheet" href="{% static 'css/componentes/accesso-rapido.css' %}">
 <link rel="stylesheet" href="{% static 'css/componentes/tutoriales.css' %}">
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
 
 <script src="{% static 'js/camara.js' %}" defer></script>
 <script src="{% static 'js/presentacion-menu.js' %}" defer></script>
+<script src="{% static 'js/messages.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}" role="alert">
+        {% if message.tags == 'success' %}
+            <i class="fas fa-check-circle"></i>
+        {% elif message.tags == 'error' %}
+            <i class="fas fa-exclamation-circle"></i>
+        {% elif message.tags == 'warning' %}
+            <i class="fas fa-exclamation-triangle"></i>
+        {% else %}
+            <i class="fas fa-info-circle"></i>
+        {% endif %}
+        <span class="alert-message">{{ message }}</span>
+        <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div id="dashboard-container" class="dashboard-layout">
             
     <aside id="sidebar" class="sidebar-slidemotion">
