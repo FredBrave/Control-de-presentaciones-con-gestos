@@ -148,13 +148,14 @@ def uploadPage(request):
                 if ext == '.pptx':
                     if os.name != 'nt':
                         messages.error(request, 'La conversión de PPTX a PDF solo está disponible en Windows.')
-
                         return redirect('presentaciones:upload')
                     
                     try:
+                        import comtypes
+                        comtypes.CoInitialize()
+                        
                         pdf_path = tmp_path.replace('.pptx', '.pdf')
                         powerpoint = comtypes.client.CreateObject("PowerPoint.Application")
-                        powerpoint.Visible = 0
                         
                         try:
                             presentation = powerpoint.Presentations.Open(tmp_path, WithWindow=False)
@@ -162,6 +163,7 @@ def uploadPage(request):
                             presentation.Close()
                         finally:
                             powerpoint.Quit()
+                            comtypes.CoUninitialize()
 
                         upload_path = pdf_path
                         upload_name = filename.replace('.pptx', '.pdf')
@@ -170,10 +172,6 @@ def uploadPage(request):
                     except Exception as e:
                         logger.error(f"Error al convertir PPTX: {e}")
                         messages.error(request, 'Error al convertir el archivo PPTX a PDF.')
-
-                if not upload_name.lower().endswith('.pdf'):
-                    messages.error(request, 'Solo se permiten archivos PDF o PPTX.')
-                    return redirect('presentaciones:upload')
 
                 if not upload_name.lower().endswith('.pdf'):
                     messages.error(request, 'Solo se permiten archivos PDF o PPTX.')

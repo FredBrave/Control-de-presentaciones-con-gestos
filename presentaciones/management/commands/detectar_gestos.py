@@ -242,6 +242,7 @@ class Command(BaseCommand):
     
     def detectar_pulgar_arriba(self, hand_landmarks):
         landmarks = hand_landmarks.landmark
+        margen_seguridad = 0.05
         
         pulgar_arriba = landmarks[4].y < landmarks[0].y - 0.1
         
