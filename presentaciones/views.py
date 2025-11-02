@@ -31,6 +31,8 @@ from .google_slides_import import (
 from django.views.decorators.csrf import csrf_exempt
 import json
 from googleapiclient.errors import HttpError
+import sys
+
 # Variables Globales
 logger = logging.getLogger(__name__)
 detector_process = None
@@ -538,7 +540,7 @@ def presentar(request, presentacion_id):
                 time.sleep(0.5)
                 
                 detector_process = subprocess.Popen(
-                    ['python', 'manage.py', 'detectar_gestos']
+                    [sys.executable, 'manage.py', 'detectar_gestos']
                 )
                 
                 detector_running = True
@@ -602,8 +604,8 @@ def iniciar_detector(request):
         time.sleep(0.5)
         
         detector_process = subprocess.Popen(
-            ['python', 'manage.py', 'detectar_gestos']
-        )
+                    [sys.executable, 'manage.py', 'detectar_gestos']
+                )
         
         detector_running = True
         
