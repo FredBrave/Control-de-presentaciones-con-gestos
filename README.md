@@ -44,9 +44,9 @@ pip install -r requirements.txt
 
 # Ejecución del proyecto
 
-Ejecuta el script principal (por ejemplo main.py o el archivo que controle la cámara):
+Ejecuta el manage.py para correr la app de django:
 
-python main.py
+python manage.py runserver
 
 
 Si al ejecutar el proyecto se presenta un error relacionado con la cámara, asegúrate de:
@@ -80,7 +80,10 @@ Pausar o reanudar la presentación
 El modelo usa puntos de referencia (landmarks) detectados por MediaPipe para interpretar los movimientos y posiciones de los dedos.
 
 # Problemas comunes
-Problema	Solución
-Error de cámara (no se abre o da “cap.read() failed”)	Selecciona el intérprete correcto en VS Code o revisa permisos de cámara
-“ModuleNotFoundError”	Asegúrate de haber activado el entorno virtual y ejecutado pip install -r requirements.txt
-FPS bajo o lentitud	Cierra programas que usen la cámara o GPU; reduce la resolución de captura en el código
+Problemas soluciones
+Error de cámara (no se abre o da “cap.read() failed”)	
+1. Selecciona el intérprete correcto en VS Code o revisa permisos de cámara
+
+2. “ModuleNotFoundError”	Asegúrate de haber activado el entorno virtual y ejecutado pip install -r requirements.txt.
+
+3. FPS bajo o lentitud	Cierra programas que usen la cámara o GPU;
