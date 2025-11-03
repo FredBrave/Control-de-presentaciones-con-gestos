@@ -1,21 +1,12 @@
-// ============================================
-// PRESENTAR.JS - Control de presentación con gestos
-// ============================================
-
 console.log('Iniciando presentar.js...');
 
-// Configurar worker de PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js';
 
-// ============================================
-// VARIABLES GLOBALES DE URL
-// ============================================
+
 const url = typeof PDF_URL !== 'undefined' ? PDF_URL : '';
 const comandoGestoUrl = typeof COMANDO_GESTO_URL !== 'undefined' ? COMANDO_GESTO_URL : '/presentaciones/comando_gesto/';
 
-// ============================================
-// VARIABLES DE ESTADO
-// ============================================
+
 let pdfDoc = null;
 let currentPage = 1;
 let baseScale = 1.5;
@@ -38,9 +29,8 @@ let moveStartY = 0;
 let moveOffsetX = 0;
 let moveOffsetY = 0;
 
-// ============================================
-// ELEMENTOS DEL DOM
-// ============================================
+let isFullscreen = false;
+
 const canvas = document.getElementById("pdf-canvas");
 const drawingCanvas = document.getElementById("drawing-canvas");
 const ctx = canvas ? canvas.getContext("2d") : null;
@@ -57,6 +47,7 @@ const zoomOutButton = document.getElementById("zoom-out");
 const resetZoomButton = document.getElementById("reset-zoom");
 const toggleDrawingButton = document.getElementById("toggle-drawing");
 const clearDrawingsButton = document.getElementById("clear-drawings");
+const fullscreenButton = document.getElementById("fullscreen-btn");
 
 const errorMessage = document.getElementById("error-message");
 const pointerDot = document.getElementById("pointer-dot");
@@ -66,9 +57,69 @@ const drawingModeIndicator = document.getElementById("drawing-mode-indicator");
 const zoomIndicator = document.getElementById("zoom-indicator");
 const drawingControls = document.getElementById("drawing-controls");
 
-// ============================================
-// FUNCIONES DE ACTUALIZACIÓN DE UI
-// ============================================
+
+const toggleFullscreen = async () => {
+    try {
+        if (!document.fullscreenElement) {
+            const container = pdfContainer || document.documentElement;
+            
+            if (container.requestFullscreen) {
+                await container.requestFullscreen();
+            } else if (container.webkitRequestFullscreen) {
+                await container.webkitRequestFullscreen();
+            } else if (container.msRequestFullscreen) {
+                await container.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                await document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                await document.msExitFullscreen();
+            }
+        }
+    } catch (err) {
+        console.error("Error al cambiar modo pantalla completa:", err);
+    }
+};
+
+const updateFullscreenButton = async () => {
+    if (!fullscreenButton) return;
+    
+    const wasFullscreen = isFullscreen;
+    isFullscreen = !!document.fullscreenElement;
+    
+    if (isFullscreen) {
+        fullscreenButton.innerHTML = '<i class="fas fa-compress"></i>';
+        fullscreenButton.title = 'Salir de pantalla completa (F)';
+        if (pdfContainer) {
+            pdfContainer.classList.add('fullscreen-mode');
+        }
+        
+        if (!wasFullscreen) {
+            await calculateAndSetBaseScale();
+            await renderPage(currentPage);
+        }
+    } else {
+        fullscreenButton.innerHTML = '<i class="fas fa-expand"></i>';
+        fullscreenButton.title = 'Pantalla completa (F)';
+        if (pdfContainer) {
+            pdfContainer.classList.remove('fullscreen-mode');
+        }
+        
+        if (wasFullscreen) {
+            await calculateAndSetBaseScale();
+            await renderPage(currentPage);
+        }
+    }
+};
+
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+document.addEventListener('msfullscreenchange', updateFullscreenButton);
+
+
 const updateModeIndicator = (mode) => {
     if (!modeIndicator) return;
     
@@ -153,8 +204,11 @@ const updatePointer = (x, y, active = true, mode = 'pointer') => {
         const pixelX = pointerX * canvasRect.width;
         const pixelY = pointerY * canvasRect.height;
         
-        pointerDot.style.left = `${canvasRect.left - containerRect.left + pixelX}px`;
-        pointerDot.style.top = `${canvasRect.top - containerRect.top + pixelY}px`;
+        const absoluteLeft = canvasRect.left - containerRect.left + pixelX;
+        const absoluteTop = canvasRect.top - containerRect.top + pixelY;
+        
+        pointerDot.style.left = `${absoluteLeft}px`;
+        pointerDot.style.top = `${absoluteTop}px`;
         pointerDot.style.display = 'block';
 
         pointerDot.className = 'pointer-dot';
@@ -176,9 +230,7 @@ const updatePointer = (x, y, active = true, mode = 'pointer') => {
     }
 };
 
-// ============================================
-// FUNCIONES DE DIBUJO
-// ============================================
+
 const initializeDrawingCanvas = () => {
     if (!drawingCanvas || !canvas) return;
     
@@ -354,18 +406,27 @@ const clearPageDrawings = () => {
     }
 };
 
-// ============================================
-// FUNCIONES DE RENDERIZADO PDF
-// ============================================
+
 const calculateAndSetBaseScale = async () => {
     if (!pdfDoc || !pdfContainer) return;
     
     try {
         const page = await pdfDoc.getPage(currentPage);
         const viewport = page.getViewport({ scale: 1.0 });
-        const containerWidth = pdfContainer.clientWidth;
-        const scaleX = containerWidth / viewport.width;
-        baseScale = scaleX;
+        
+        if (document.fullscreenElement) {
+            const containerWidth = window.innerWidth;
+            const containerHeight = window.innerHeight;
+            
+            const scaleX = containerWidth / viewport.width;
+            const scaleY = containerHeight / viewport.height;
+            
+            baseScale = Math.min(scaleX, scaleY) * 0.95;
+        } else {
+            const containerWidth = pdfContainer.clientWidth;
+            const scaleX = containerWidth / viewport.width;
+            baseScale = scaleX;
+        }
     } catch (err) {
         console.error("Error al calcular la escala base:", err);
         baseScale = 1.0;
@@ -442,9 +503,6 @@ const loadPdf = async () => {
     }
 };
 
-// ============================================
-// FUNCIONES DE NAVEGACIÓN
-// ============================================
 const goToPrevPage = () => {
     if (currentPage > 1) renderPage(currentPage - 1);
 };
@@ -453,9 +511,7 @@ const goToNextPage = () => {
     if (pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage + 1);
 };
 
-// ============================================
-// FUNCIONES DE ZOOM
-// ============================================
+
 const zoomIn = () => setGestureZoom(gestureZoom + 0.2);
 const zoomOut = () => setGestureZoom(gestureZoom - 0.2);
 const resetZoom = () => setGestureZoom(1.0);
@@ -469,33 +525,78 @@ const setGestureZoom = async (zoomLevel, centerX = pointerX, centerY = pointerY)
 
     if (Math.abs(oldGestureZoom - gestureZoom) < 0.01) return;
 
-    const oldScrollLeft = pdfContainer.scrollLeft;
-    const oldScrollTop = pdfContainer.scrollTop;
-    const oldCanvasWidth = canvas.width;
-    const oldCanvasHeight = canvas.height;
-
-    await renderPage(currentPage);
-
-    const deltaWidth = canvas.width - oldCanvasWidth;
-    const deltaHeight = canvas.height - oldCanvasHeight;
-
-    const newScrollLeft = oldScrollLeft + (deltaWidth * centerX);
-    const newScrollTop = oldScrollTop + (deltaHeight * centerY);
+    const isInFullscreen = !!document.fullscreenElement;
     
-    pdfContainer.scrollTo({
-        left: newScrollLeft,
-        top: newScrollTop,
-        behavior: 'auto'
-    });
+    if (isInFullscreen) {
+        const oldCanvasWidth = canvas.width;
+        const oldCanvasHeight = canvas.height;
+        
+        const pointPixelX = centerX * oldCanvasWidth;
+        const pointPixelY = centerY * oldCanvasHeight;
+        
+        const canvasRect = canvas.getBoundingClientRect();
+        const containerRect = pdfContainer.getBoundingClientRect();
+        
+        const pointViewportX = (canvasRect.left - containerRect.left) + (centerX * canvasRect.width);
+        const pointViewportY = (canvasRect.top - containerRect.top) + (centerY * canvasRect.height);
+        
+        const oldScrollLeft = pdfContainer.scrollLeft;
+        const oldScrollTop = pdfContainer.scrollTop;
+        
+        await renderPage(currentPage);
+        
+        const newCanvasWidth = canvas.width;
+        const newCanvasHeight = canvas.height;
+        
+        const newPointPixelX = centerX * newCanvasWidth;
+        const newPointPixelY = centerY * newCanvasHeight;
+        
+        const deltaPixelX = newPointPixelX - pointPixelX;
+        const deltaPixelY = newPointPixelY - pointPixelY;
+        
+        const newScrollLeft = oldScrollLeft + deltaPixelX;
+        const newScrollTop = oldScrollTop + deltaPixelY;
+        
+        pdfContainer.scrollTo({
+            left: newScrollLeft,
+            top: newScrollTop,
+            behavior: 'auto'
+        });
+        
+        console.log('Zoom fullscreen:', {
+            centerX, centerY,
+            oldDims: [oldCanvasWidth, oldCanvasHeight],
+            newDims: [newCanvasWidth, newCanvasHeight],
+            delta: [deltaPixelX, deltaPixelY],
+            scroll: [newScrollLeft, newScrollTop]
+        });
+    } else {
+        const oldScrollLeft = pdfContainer.scrollLeft;
+        const oldScrollTop = pdfContainer.scrollTop;
+        const oldCanvasWidth = canvas.width;
+        const oldCanvasHeight = canvas.height;
+
+        await renderPage(currentPage);
+
+        const deltaWidth = canvas.width - oldCanvasWidth;
+        const deltaHeight = canvas.height - oldCanvasHeight;
+
+        const newScrollLeft = oldScrollLeft + (deltaWidth * centerX);
+        const newScrollTop = oldScrollTop + (deltaHeight * centerY);
+        
+        pdfContainer.scrollTo({
+            left: newScrollLeft,
+            top: newScrollTop,
+            behavior: 'auto'
+        });
+    }
 
     if (lastCommandDisplay) {
         lastCommandDisplay.textContent = `Zoom: ${Math.round(gestureZoom * 100)}% en punto (${(centerX * 100).toFixed(1)}%, ${(centerY * 100).toFixed(1)}%)`;
     }
 };
 
-// ============================================
-// EVENT LISTENERS DE BOTONES
-// ============================================
+
 if (prevButton) prevButton.addEventListener("click", goToPrevPage);
 if (nextButton) nextButton.addEventListener("click", goToNextPage);
 if (zoomInButton) zoomInButton.addEventListener("click", zoomIn);
@@ -503,10 +604,9 @@ if (zoomOutButton) zoomOutButton.addEventListener("click", zoomOut);
 if (resetZoomButton) resetZoomButton.addEventListener("click", resetZoom);
 if (toggleDrawingButton) toggleDrawingButton.addEventListener("click", () => updateDrawingModeIndicator(!drawingMode));
 if (clearDrawingsButton) clearDrawingsButton.addEventListener("click", clearPageDrawings);
+if (fullscreenButton) fullscreenButton.addEventListener("click", toggleFullscreen);
 
-// ============================================
-// EVENT LISTENERS DE TECLADO
-// ============================================
+
 document.addEventListener("keydown", (event) => {
     switch(event.key) {
         case "ArrowLeft":
@@ -542,15 +642,23 @@ document.addEventListener("keydown", (event) => {
                 clearPageDrawings();
             }
             break;
+        case "f":
+        case "F":
+            event.preventDefault();
+            toggleFullscreen();
+            break;
         case "Escape":
-            updatePointer(0.5, 0.5, false);
+            if (document.fullscreenElement) {
+                event.preventDefault();
+                toggleFullscreen();
+            } else {
+                updatePointer(0.5, 0.5, false);
+            }
             break;
     }
 });
 
-// ============================================
-// SISTEMA DE COOLDOWNS
-// ============================================
+
 const clientCooldowns = {
     next: { last: 0, duration: 1500 },
     prev: { last: 0, duration: 1500 },
@@ -589,9 +697,6 @@ const getRemainingCooldown = (commandType) => {
     return Math.max(0, cooldown.duration - timePassed);
 };
 
-// ============================================
-// PROCESAMIENTO DE COMANDOS
-// ============================================
 const processCommand = (comando) => {
     const currentTime = Date.now();
     
@@ -804,9 +909,6 @@ const processCommand = (comando) => {
     }
 };
 
-// ============================================
-// POLLING DE COMANDOS DESDE EL SERVIDOR
-// ============================================
 let lastProcessedCommand = null;
 let commandCounter = 0;
 
@@ -822,9 +924,7 @@ const pollForCommands = async () => {
         if (response.ok) {
             const data = await response.json();
             
-            // Procesar solo si hay comando y es diferente al último procesado
             if (data.success && data.comando) {
-                // Si es un comando diferente o es un comando de movimiento continuo
                 const isContinuousCommand = data.comando.startsWith('drawing_') || 
                                            data.comando.startsWith('erasing_') ||
                                            data.comando.startsWith('moving_') ||
@@ -843,11 +943,7 @@ const pollForCommands = async () => {
     }
 };
 
-// ============================================
-// INICIALIZACIÓN Y POLLING
-// ============================================
 
-// Iniciar polling cada 100ms
 let pollingInterval = null;
 let pollCount = 0;
 
@@ -857,7 +953,7 @@ const startPolling = () => {
     }
     pollingInterval = setInterval(() => {
         pollCount++;
-        if (pollCount % 50 === 0) { // Log cada 5 segundos
+        if (pollCount % 50 === 0) {
             console.log(`Polling activo: ${pollCount} consultas realizadas`);
         }
         pollForCommands();
@@ -873,9 +969,7 @@ const stopPolling = () => {
     }
 };
 
-// ============================================
-// MANEJO DE VISIBILIDAD DE LA PÁGINA
-// ============================================
+
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         stopPolling();
@@ -884,9 +978,7 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// ============================================
-// INICIO DE LA APLICACIÓN
-// ============================================
+
 const initApp = async () => {
     console.log('Iniciando aplicación de presentación...');
     
@@ -905,10 +997,11 @@ const initApp = async () => {
     console.log('PDF cargado, iniciando polling de comandos...');
     startPolling();
     
-    console.log('✓ Aplicación inicializada correctamente');
+    updateFullscreenButton();
+    
+    console.log('Aplicación inicializada correctamente');
 };
 
-// Iniciar cuando el DOM esté listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {

@@ -53,6 +53,151 @@
         text-align: center;
         margin: 0 0 1.5rem 0 !important;
     }
+
+    /* ESTILOS DE PANTALLA COMPLETA */
+    #fullscreen-btn {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    }
+
+    #fullscreen-btn:hover {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    #fullscreen-btn:active {
+        transform: translateY(0);
+    }
+
+    #fullscreen-btn i {
+        font-size: 1.1rem;
+    }
+
+    /* Contenedor en modo pantalla completa */
+    .pdf-container.fullscreen-mode {
+        background: #1a1a1a !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: auto !important;
+        position: relative !important;
+        display: block !important;
+    }
+
+    .fullscreen-mode #canvas-container {
+        width: max-content !important;
+        height: max-content !important;
+        min-width: 100% !important;
+        min-height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+    }
+
+    .fullscreen-mode #pdf-canvas {
+        display: block !important;
+        position: relative !important;
+    }
+
+    .fullscreen-mode #drawing-canvas {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* Ajustar controles en pantalla completa */
+    .fullscreen-mode .status-indicator,
+    .fullscreen-mode .drawing-mode-indicator,
+    .fullscreen-mode .zoom-indicator {
+        background: rgba(0, 0, 0, 0.8) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: fixed !important;
+    }
+
+    .fullscreen-mode .btn-nav-side {
+        background: rgba(0, 0, 0, 0.7) !important;
+        color: white !important;
+        z-index: 100 !important;
+        position: fixed !important;
+    }
+
+    .fullscreen-mode .btn-nav-prev {
+        left: 20px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+    }
+
+    .fullscreen-mode .btn-nav-next {
+        right: 20px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+    }
+
+    .fullscreen-mode .btn-nav-side:hover {
+        background: rgba(0, 0, 0, 0.9) !important;
+    }
+
+    /* Asegurar que el puntero funcione en pantalla completa */
+    .fullscreen-mode #pointer-overlay {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        pointer-events: none !important;
+    }
+
+    /* Indicador de pantalla completa */
+    .fullscreen-indicator {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        display: none;
+        z-index: 9999;
+        pointer-events: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fullscreen-mode ~ .fullscreen-indicator {
+        display: block;
+    }
+
+    /* Ajustar tamaño del botón de pantalla completa para móviles */
+    @media (max-width: 768px) {
+        #fullscreen-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+        }
+    }
 </style>
 <link rel="stylesheet" href="{% static 'css/presentar.css' %}">
 {% endblock %}
@@ -106,6 +251,11 @@
                         <button id="toggle-drawing" class="btn-drawing">Dibujo</button>
                         <button id="clear-drawings" class="btn-clear">Limpiar</button>
                     </div>
+
+                    <button id="fullscreen-btn" title="Pantalla completa (F)">
+                        <i class="fas fa-expand"></i>
+                        <span>Pantalla Completa</span>
+                    </button>
                 </div>
             </div>
 
@@ -141,52 +291,62 @@
             </div>
 
             <div class="gestures-guide">
-    <h3 class="gestures-title">Controles de Gestos:</h3>
-        <div class="gestures-grid">
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-purple">✌️</span>
-                    <span class="gesture-text"><strong>PAZ (índice+medio):</strong> Activar/desactivar modo dibujo</span>
+                <h3 class="gestures-title">Controles de Gestos:</h3>
+                <div class="gestures-grid">
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-purple">✌️</span>
+                        <span class="gesture-text"><strong>PAZ (índice+medio):</strong> Activar/desactivar modo dibujo</span>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-yellow">✊</span>
+                        <span class="gesture-text"><strong>Puño cerrado:</strong> Puntero activo</span>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-blue">☝️</span>
+                        <span class="gesture-text"><strong>Índice solo:</strong> Dibujar (modo dibujo)</span>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-orange">🖐️</span>
+                        <span class="gesture-text"><strong>Mano abierta:</strong> Borrar (modo dibujo)</span>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-purple">👌</span>
+                        <span class="gesture-text"><strong>Pinza (pulgar+índice):</strong> Mover dibujos (modo dibujo)</span>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-green">👆</span>
+                        <span class="gesture-text"><strong>Meñique solo:</strong> Limpiar dibujos (modo dibujo)</span>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-red">🖐️🖐️</span>
+                        <span class="gesture-text"><strong>Ambas manos abiertas:</strong> Zoom dinámico</span>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-green">👉</span>
+                        <span class="gesture-text"><strong>Pistola derecha:</strong> Página siguiente</span>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-badge gesture-badge-green">👈</span>
+                        <span class="gesture-text"><strong>Pistola izquierda:</strong> Página anterior</span>
+                    </div>
                 </div>
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-yellow">✊</span>
-                    <span class="gesture-text"><strong>Puño cerrado:</strong> Puntero activo</span>
-                </div>
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-blue">☝️</span>
-                    <span class="gesture-text"><strong>Índice solo:</strong> Dibujar (modo dibujo)</span>
-                </div>
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-orange">🖐️</span>
-                    <span class="gesture-text"><strong>Mano abierta:</strong> Borrar (modo dibujo)</span>
-                </div>
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-purple">👌</span>
-                    <span class="gesture-text"><strong>Pinza (pulgar+índice):</strong> Mover dibujos (modo dibujo)</span>
-                </div>
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-green">👆</span>
-                    <span class="gesture-text"><strong>Meñique solo:</strong> Limpiar dibujos (modo dibujo)</span>
-                </div>
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-red">🖐️🖐️</span>
-                    <span class="gesture-text"><strong>Ambas manos abiertas:</strong> Zoom dinámico</span>
-                </div>
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-green">👉</span>
-                    <span class="gesture-text"><strong>Pistola derecha:</strong> Página siguiente</span>
-                </div>
-                <div class="gesture-item">
-                    <span class="gesture-badge gesture-badge-green">👈</span>
-                    <span class="gesture-text"><strong>Pistola izquierda:</strong> Página anterior</span>
+                
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                    <p style="margin: 0; color: #4b5563; font-size: 0.95rem;">
+                        <strong style="color: #8b5cf6;">💡 Atajo de teclado:</strong> Presiona <kbd style="background: white; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; font-family: monospace;">F</kbd> para activar/desactivar pantalla completa. Usa <kbd style="background: white; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; font-family: monospace;">ESC</kbd> para salir.
+                    </p>
                 </div>
             </div>
-        </div>
 
             <div id="error-message" class="error-message" style="display: none;">
                 <p>Error: No se pudo cargar el documento PDF.</p>
             </div>
         </div>
     </div>
+</div>
+
+<div class="fullscreen-indicator">
+    Modo Pantalla Completa Activo - Presiona ESC para salir
 </div>
 
 <script>

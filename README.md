@@ -1,7 +1,7 @@
 # Control de Presentaciones con Gestos
 
 Este proyecto permite controlar presentaciones mediante gestos de la mano, utilizando OpenCV y MediaPipe para el reconocimiento visual en tiempo real.
-Fue desarrollado en Python 3.11 y está diseñado para ejecutarse en entornos locales (VS Code recomendado).
+Fue desarrollado en Python 3.11 y está diseñado para ejecutarse en entornos locales.
 
 # Requisitos previos
 
