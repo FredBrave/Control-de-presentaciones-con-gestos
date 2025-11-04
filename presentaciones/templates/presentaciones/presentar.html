@@ -5,7 +5,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-    /* Estilos críticos inline para asegurar que se apliquen */
     body {
         background: transparent !important;
     }
@@ -54,7 +53,62 @@
         margin: 0 0 1.5rem 0 !important;
     }
 
-    /* ESTILOS DE PANTALLA COMPLETA */
+    .stop-presentation-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f3f4f6;
+    }
+
+    .btn-stop-presentation {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.7rem;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .btn-stop-presentation:hover {
+        background: linear-gradient(135deg, #b91c1c, #991b1b);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+    }
+
+    .btn-stop-presentation:active {
+        transform: translateY(0);
+    }
+
+    .btn-stop-presentation:disabled {
+        background: linear-gradient(135deg, #9ca3af, #6b7280);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-stop-presentation i {
+        font-size: 1.2rem;
+    }
+
+    .btn-stop-presentation .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
     #fullscreen-btn {
         background: linear-gradient(135deg, #8b5cf6, #7c3aed);
         color: white;
@@ -84,7 +138,15 @@
         font-size: 1.1rem;
     }
 
-    /* Contenedor en modo pantalla completa */
+    .buttons-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
     .pdf-container.fullscreen-mode {
         background: #1a1a1a !important;
         width: 100vw !important;
@@ -117,7 +179,6 @@
         pointer-events: none !important;
     }
 
-    /* Ajustar controles en pantalla completa */
     .fullscreen-mode .status-indicator,
     .fullscreen-mode .drawing-mode-indicator,
     .fullscreen-mode .zoom-indicator {
@@ -150,7 +211,6 @@
         background: rgba(0, 0, 0, 0.9) !important;
     }
 
-    /* Asegurar que el puntero funcione en pantalla completa */
     .fullscreen-mode #pointer-overlay {
         position: absolute !important;
         top: 0 !important;
@@ -160,7 +220,19 @@
         pointer-events: none !important;
     }
 
-    /* Indicador de pantalla completa */
+    .fullscreen-mode .btn-stop-presentation {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 9999;
+        background: rgba(220, 38, 38, 0.95);
+        backdrop-filter: blur(10px);
+    }
+
+    .fullscreen-mode .btn-stop-presentation:hover {
+        background: rgba(185, 28, 28, 1);
+    }
+
     .fullscreen-indicator {
         position: fixed;
         bottom: 20px;
@@ -191,11 +263,27 @@
         display: block;
     }
 
-    /* Ajustar tamaño del botón de pantalla completa para móviles */
     @media (max-width: 768px) {
         #fullscreen-btn {
             padding: 0.4rem 0.8rem;
             font-size: 0.9rem;
+        }
+
+        .btn-stop-presentation {
+            padding: 0.6rem 1.5rem;
+            font-size: 1rem;
+            width: 100%;
+            max-width: none;
+        }
+        
+        .buttons-section {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .stop-presentation-container {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
         }
     }
 </style>
@@ -290,6 +378,13 @@
                 </button>
             </div>
 
+            <div class="stop-presentation-container">
+                <button id="stop-presentation-btn" class="btn-stop-presentation" title="Detener presentación y volver al inicio">
+                    <i class="fas fa-stop-circle"></i>
+                    <span>Detener Presentación</span>
+                </button>
+            </div>
+
             <div class="gestures-guide">
                 <h3 class="gestures-title">Controles de Gestos:</h3>
                 <div class="gestures-grid">
@@ -333,7 +428,7 @@
                 
                 <div style="margin-top: 1.5rem; padding: 1rem; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #8b5cf6;">
                     <p style="margin: 0; color: #4b5563; font-size: 0.95rem;">
-                        <strong style="color: #8b5cf6;">💡 Atajo de teclado:</strong> Presiona <kbd style="background: white; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; font-family: monospace;">F</kbd> para activar/desactivar pantalla completa. Usa <kbd style="background: white; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; font-family: monospace;">ESC</kbd> para salir.
+                        <strong style="color: #8b5cf6;">💡 Atajos de teclado:</strong> Presiona <kbd style="background: white; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; font-family: monospace;">F</kbd> para pantalla completa. <kbd style="background: white; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; font-family: monospace;">ESC</kbd> para salir.
                     </p>
                 </div>
             </div>
@@ -352,11 +447,15 @@
 <script>
     const PDF_URL = "{{ url_pdf }}";
     const COMANDO_GESTO_URL = "{% url 'presentaciones:comando_gesto' %}";
+    const DETENER_DETECTOR_URL = "{% url 'presentaciones:detener_detector' %}";
+    const HOME_URL = "{% url 'presentaciones:home' %}";
     
     {% if debug %}
     console.log('=== DEBUG INFO ===');
     console.log('PDF URL:', PDF_URL);
     console.log('Comando Gesto URL:', COMANDO_GESTO_URL);
+    console.log('Detener Detector URL:', DETENER_DETECTOR_URL);
+    console.log('Home URL:', HOME_URL);
     console.log('Presentación ID:', {{ presentacion.id }});
     console.log('==================');
     {% endif %}

@@ -651,10 +651,16 @@ def iniciar_detector(request):
             'error': 'unknown_error'
         })
 
-
-@login_required
+@csrf_exempt
 def detener_detector(request):
     global detector_process, detector_running
+    
+    if request.method not in ['GET', 'POST']:
+        return JsonResponse({
+            'success': False,
+            'message': 'Método no permitido',
+            'error': 'invalid_method'
+        }, status=405)
     
     if not detector_running or detector_process is None:
         return JsonResponse({

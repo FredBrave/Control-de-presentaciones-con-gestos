@@ -1002,10 +1002,89 @@ const initApp = async () => {
     console.log('Aplicación inicializada correctamente');
 };
 
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
     initApp();
 }
+
+
+const detenerYSalir = async () => {
+    try {
+        stopPolling();
+        
+        const detenerUrl = typeof DETENER_DETECTOR_URL !== 'undefined' 
+            ? DETENER_DETECTOR_URL 
+            : '/presentaciones/detener_detector/';
+        
+        const homeUrl = typeof HOME_URL !== 'undefined'
+            ? HOME_URL
+            : '/presentaciones/';
+        
+        console.log('Deteniendo detector...');
+        
+        const response = await fetch(detenerUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        });
+        
+        if (response.ok) {
+            console.log('Detector detenido correctamente');
+            window.location.href = homeUrl;
+        } else {
+            console.error('Error al detener detector');
+            window.location.href = homeUrl;
+        }
+        
+    } catch (err) {
+        console.error('Error al detener el detector:', err);
+        const homeUrl = typeof HOME_URL !== 'undefined' ? HOME_URL : '/presentaciones/';
+        window.location.href = homeUrl;
+    }
+};
+
+const detenerDetectorAlSalir = () => {
+    try {
+        const detenerUrl = typeof DETENER_DETECTOR_URL !== 'undefined' 
+            ? DETENER_DETECTOR_URL 
+            : '/presentaciones/detener_detector/';
+        
+        const data = new Blob([JSON.stringify({})], { type: 'application/json' });
+        navigator.sendBeacon(detenerUrl, data);
+        
+        console.log('Señal de detención enviada');
+    } catch (err) {
+        console.error('Error al detener el detector:', err);
+    }
+};
+
+window.addEventListener('beforeunload', () => {
+    console.log('Página cerrándose, deteniendo detector...');
+    stopPolling();
+    detenerDetectorAlSalir();
+});
+
+window.addEventListener('pagehide', () => {
+    stopPolling();
+    detenerDetectorAlSalir();
+});
+
+const stopPresentationBtn = document.getElementById('stop-presentation-btn');
+if (stopPresentationBtn) {
+    stopPresentationBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        stopPresentationBtn.disabled = true;
+        stopPresentationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deteniendo...';
+        
+        await detenerYSalir();
+    });
+}
+
+
 
 console.log('presentar.js cargado completamente');
