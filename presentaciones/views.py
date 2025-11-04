@@ -14,6 +14,7 @@ from google.oauth2 import service_account
 from .google_drive_oauth import get_or_create_user_folder, upload_to_drive
 from googleapiclient.discovery import build
 import tempfile
+from django.views.decorators.http import require_http_methods
 import comtypes.client
 from django.http import JsonResponse
 from django.urls import reverse
@@ -240,6 +241,17 @@ def uploadPage(request):
         form = UploadPresentationForm()
 
     return render(request, 'presentaciones/upload.html', {'form': form})
+
+@login_required(login_url='presentaciones:login')
+@require_http_methods(["POST"])
+def eliminar_presentacion(request, presentacion_id):
+    try:
+        presentacion = get_object_or_404(Presentacion, id=presentacion_id, usuario=request.user)
+        presentacion.delete()
+        messages.success(request, 'Presentación eliminada exitosamente.')
+        return JsonResponse({'success': True, 'message': 'Presentación eliminada'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 
 @login_required

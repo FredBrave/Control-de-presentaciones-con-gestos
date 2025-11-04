@@ -63,7 +63,6 @@
             case 'eliminar':
                 if (confirm('¿Estás seguro de que deseas eliminar esta presentación?')) {
                     console.log('Eliminar presentación:', presentationId);
-                    alert('Función de eliminación en desarrollo');
                 }
                 break;
                 
