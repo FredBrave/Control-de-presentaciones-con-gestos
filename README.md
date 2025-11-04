@@ -16,38 +16,44 @@ Visual Studio Code
 # Instalación del proyecto
 
 Clona este repositorio:
+```
 
 git clone https://github.com/FredBrave/Control-de-presentaciones-con-gestos.git
+
 cd Control-de-presentaciones-con-gestos
 
-
+```
 Crea un entorno virtual con Python 3.11:
-
+```
 python3.11 -m venv venv
 
-
+```
 Activa el entorno virtual:
 
 En Windows:
-
+```
 venv\Scripts\activate
-
+```
 
 En macOS / Linux:
-
+```
 source venv/bin/activate
-
+```
 
 Instala las dependencias necesarias:
-
+```
 pip install -r requirements.txt
-
+```
 # Ejecución del proyecto
 
 Ejecuta el manage.py para correr la app de django:
+```
+python manage.py makemigrations
+
+python manage.py migrate
 
 python manage.py runserver
-
+```
 
 Si al ejecutar el proyecto se presenta un error relacionado con la cámara, asegúrate de:
 
@@ -67,6 +73,12 @@ MediaPipe – reconocimiento y seguimiento de manos
 
 NumPy – manipulación de datos numéricos
 
+Comtypes - contro de presentaciones pptx para conversion
+
+pdf2image - Control de pdf para su manipulacion
+
+google-api-python-client - Control de la api de google para servicios en la nube
+
 # Descripción del funcionamiento
 
 La aplicación detecta los gestos de la mano del usuario en tiempo real mediante la cámara, y los traduce en acciones sobre la presentación, como:
@@ -75,7 +87,19 @@ Avanzar diapositiva
 
 Retroceder
 
-Pausar o reanudar la presentación
+Puntero
+
+Zoom
+
+Modo dibujo
+
+Dibujar
+
+Mover Dibujo
+
+Borrar
+
+Limpiar pantalla
 
 El modelo usa puntos de referencia (landmarks) detectados por MediaPipe para interpretar los movimientos y posiciones de los dedos.
 
