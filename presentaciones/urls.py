@@ -19,4 +19,5 @@ urlpatterns = [
     path('detector/detener/', views.detener_detector, name='detener_detector'),
     path('detector/estado/', views.verificar_estado_detector, name='verificar_estado_detector'),
     path('comando-gesto/', views.comando_gesto, name='comando_gesto'),
+    path('guia-gestos/', views.guia_gestos, name='guia_gestos'),
 ]

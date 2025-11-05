@@ -1,0 +1,249 @@
+{% extends "presentaciones/base.html" %}
+{% load static %}
+
+{% block title %}SLIDEMOTION - Guía de Gestos{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+<link rel="stylesheet" href="{% static 'css/componentes/accesso-rapido.css' %}">
+<link rel="stylesheet" href="{% static 'css/componentes/guia-gestos.css' %}">
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
+<script src="{% static 'js/camara.js' %}" defer></script>
+<script src="{% static 'js/messages.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div id="dashboard-container" class="dashboard-layout">
+            
+    <aside id="sidebar" class="sidebar-slidemotion">
+        <div class="camera-indicator">
+            <span class="camera-text">
+                <i class="fas fa-video"></i> cámara detectada
+            </span>
+            <span class="camera-dot"></span>
+        </div>
+
+        {% include 'presentaciones/componentes/accesso-rapido.html' with current_page='gestures' %}
+    </aside>
+    
+    <div id="view-container" class="view-container">
+        <div class="view-padding">
+            <div class="welcome-section">
+                <div>
+                    <h1 class="welcome-title">
+                        Guía de Gestos <span class="welcome-subtitle">Controla tus presentaciones con las manos</span>
+                    </h1>
+                </div>
+            </div>
+
+            <div class="guia-intro">
+                <p>Aprende a controlar tus presentaciones utilizando gestos con las manos. Asegúrate de que la cámara esté activada y colócate frente a ella para que el sistema pueda detectar tus movimientos.</p>
+            </div>
+
+            <div class="gestos-grid">
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            ✌️
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">PAZ (índice+medio)</h3>
+                        <p class="gesto-description">
+                            Extiende tu <strong>dedo índice y medio</strong> formando una "V" de paz. Este gesto activa o desactiva el modo dibujo.
+                        </p>
+                        <div class="gesto-badge badge-info">
+                            <i class="fas fa-pen"></i> Activar/desactivar modo dibujo
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            ✊
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">Puño cerrado</h3>
+                        <p class="gesto-description">
+                            Cierra tu <strong>mano en puño</strong>. Activa el puntero para señalar elementos en la diapositiva.
+                        </p>
+                        <div class="gesto-badge badge-warning">
+                            <i class="fas fa-bullseye"></i> Puntero activo
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            🤘
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">Gesto Cuernos</h3>
+                        <p class="gesto-description">
+                            Extiende <strong>dedo índice</strong> con el anular. Úsalo para dibujar cuando el modo dibujo está activo.
+                        </p>
+                        <div class="gesto-badge badge-primary">
+                            <i class="fas fa-pencil-alt"></i> Dibujar (modo dibujo)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            🖐️
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">Mano abierta</h3>
+                        <p class="gesto-description">
+                            Extiende tu <strong>mano completamente abierta</strong> con todos los dedos separados. Borra los trazos en modo dibujo.
+                        </p>
+                        <div class="gesto-badge badge-secondary">
+                            <i class="fas fa-eraser"></i> Borrar (modo dibujo)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            👌
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">Pinza (pulgar+índice)</h3>
+                        <p class="gesto-description">
+                            Une tu <strong>pulgar e índice</strong> formando un círculo (gesto OK). Permite mover los dibujos en la diapositiva.
+                        </p>
+                        <div class="gesto-badge badge-info">
+                            <i class="fas fa-arrows-alt"></i> Mover dibujos (modo dibujo)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            👍
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">Pulgar Extendido</h3>
+                        <p class="gesto-description">
+                            Extiende solo tu <strong>dedo pulgar</strong> con el resto cerrados. Limpia todos los dibujos de la diapositiva actual.
+                        </p>
+                        <div class="gesto-badge badge-danger">
+                            <i class="fas fa-trash"></i> Limpiar dibujos (modo dibujo)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            🖐️🖐️
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">Ambas manos abiertas</h3>
+                        <p class="gesto-description">
+                            Extiende <strong>ambas manos abiertas</strong> frente a la cámara. Controla el zoom de manera dinámica.
+                        </p>
+                        <div class="gesto-badge badge-success">
+                            <i class="fas fa-search-plus"></i> Zoom dinámico
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            👉
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">Pistola derecha</h3>
+                        <p class="gesto-description">
+                            Forma una <strong>pistola con tu mano derecha</strong> (índice y pulgar extendidos). Avanza a la siguiente página.
+                        </p>
+                        <div class="gesto-badge">
+                            <i class="fas fa-arrow-right"></i> Página siguiente
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gesto-card">
+                    <div class="gesto-visual">
+                        <div class="gesto-icon">
+                            👈
+                        </div>
+                    </div>
+                    <div class="gesto-info">
+                        <h3 class="gesto-title">Pistola izquierda</h3>
+                        <p class="gesto-description">
+                            Forma una <strong>pistola con tu mano izquierda</strong> (índice y pulgar extendidos). Retrocede a la página anterior.
+                        </p>
+                        <div class="gesto-badge badge-secondary">
+                            <i class="fas fa-arrow-left"></i> Página anterior
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="consejos-section">
+                <h2 class="section-title">
+                    <i class="fas fa-lightbulb"></i> Consejos para Mejor Detección
+                </h2>
+                <div class="consejos-grid">
+                    <div class="consejo-card">
+                        <div class="consejo-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <h4>Buena Iluminación</h4>
+                        <p>Asegúrate de tener suficiente luz en la habitación para que la cámara pueda detectar tus manos claramente.</p>
+                    </div>
+
+                    <div class="consejo-card">
+                        <div class="consejo-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h4>Posición de la Cámara</h4>
+                        <p>Colócate a una distancia de 1-2 metros de la cámara y asegúrate de estar en el centro del encuadre.</p>
+                    </div>
+
+                    <div class="consejo-card">
+                        <div class="consejo-icon">
+                            <i class="fas fa-hand-sparkles"></i>
+                        </div>
+                        <h4>Gestos Claros</h4>
+                        <p>Realiza los gestos de forma clara y deliberada. Mantén la posición el tiempo indicado para cada gesto.</p>
+                    </div>
+
+                    <div class="consejo-card">
+                        <div class="consejo-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h4>Fondo Uniforme</h4>
+                        <p>Un fondo simple y sin distracciones ayuda al sistema a detectar mejor tus manos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-center">
+                <a href="{% url 'presentaciones:home' %}" class="btn-primary">
+                    <i class="fas fa-home"></i> Volver al Inicio
+                </a>
+                <a href="{% url 'presentaciones:upload' %}" class="btn-primary">
+                    <i class="fas fa-play-circle"></i> Iniciar Presentación
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

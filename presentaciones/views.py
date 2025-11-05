@@ -124,6 +124,13 @@ def home(request):
     return render(request, 'presentaciones/home.html', context)
 
 @login_required
+def guia_gestos(request):
+    context = {
+        'user': request.user,
+    }
+    return render(request, 'presentaciones/guia_gestos.html', context)
+
+@login_required
 def uploadPage(request):
     if request.method == 'POST':
         form = UploadPresentationForm(request.POST, request.FILES)
