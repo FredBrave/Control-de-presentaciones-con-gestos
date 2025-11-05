@@ -1,35 +1,26 @@
-# =========================
-# Python
-# =========================
+
 _pycache_/
 *.py[cod]
 *$py.class
 *.so
 
-# Entornos virtuales
 venv/
 env/
 ENV/
 .venv/
 
-# Servicio en la nube
 config/credentials.json
 config/*.json
 config/
 presentaciones/config/oauth.json
 presentaciones/config/*.json
 token.json
-<<<<<<< HEAD
->>>>>>> stage
-=======
->>>>>>> cda8f2e (RF-11: Presentacion con gestos. Gesto zoom con puntero)
 
-# Configuración local
+
 *.env
 *.local
 *.secret
 
-# Logs y archivos temporales
 *.log
 *.sqlite3
 *.bak
@@ -37,24 +28,18 @@ token.json
 *.swp
 *.DS_Store
 
-# =========================
-# Django
-# =========================
+
 *.pot
 *.pyc
 *.mo
 db.sqlite3
 media/
 staticfiles/
-# Archivos de migración que no quieras versionar
 */migrations/.pyc
 **/migrations/_pycache_/
 */migrations/.py
 
-# =========================
-# MediaPipe / OpenCV / Modelos
-# =========================
-# Modelos de Deep Learning entrenados
+
 *.h5
 *.hdf5
 *.pb
@@ -62,7 +47,6 @@ staticfiles/
 *.onnx
 *.ckpt
 
-# Datos grandes / imágenes
 dataset/
 *.png
 *.jpg
