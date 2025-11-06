@@ -105,7 +105,7 @@ class Command(BaseCommand):
         except Exception as e:
             self.errores_consecutivos += 1
             if self.errores_consecutivos <= 2:
-                self.stderr.write(f"❌ Error: {type(e).__name__}")
+                self.stderr.write(f" Error: {type(e).__name__}")
             return False
 
     def calcular_distancia(self, punto1, punto2, ancho_frame, alto_frame):
@@ -394,7 +394,7 @@ class Command(BaseCommand):
                                     self.tiempo_inicio_feedback = time.time()
                                     
                                     self.stdout.write(f"{'='*50}")
-                                    self.stdout.write(f"MODO DIBUJO: {'ACTIVADO ✓' if self.modo_dibujo_activo else 'DESACTIVADO ✗'}")
+                                    self.stdout.write(f"MODO DIBUJO: {'ACTIVADO ' if self.modo_dibujo_activo else 'DESACTIVADO '}")
                                     self.stdout.write(f"{'='*50}")
 
                                 else:
@@ -407,7 +407,7 @@ class Command(BaseCommand):
                                 
                                 if self.detectar_pulgar_arriba(hand_landmarks):
                                     if self.enviar_comando("clear_drawings", 'clear_drawings'):
-                                        cv2.putText(frame, "LIMPIANDO DIBUJOS 👍", (10, 130),
+                                        cv2.putText(frame, "LIMPIANDO DIBUJOS", (10, 130),
                                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
                                         self.esta_dibujando = False
                                         self.esta_borrando = False

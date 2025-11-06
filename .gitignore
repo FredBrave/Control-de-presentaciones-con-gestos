@@ -48,9 +48,6 @@ staticfiles/
 *.ckpt
 
 dataset/
-*.png
-*.jpg
-*.jpeg
 *.bmp
 *.mp4
 *.avi
