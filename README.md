@@ -24,8 +24,10 @@ cd Control-de-presentaciones-con-gestos
 
 ```
 Crea un entorno virtual con Python 3.11:
+
+Importante (El proyecto no funcionara en la version 3.13 de python funciona en versiones como 3.11 o 3.12)
 ```
-python3.11 -m venv venv
+python -m venv venv
 
 ```
 Activa el entorno virtual:
