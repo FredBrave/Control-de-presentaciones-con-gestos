@@ -435,7 +435,8 @@ class Command(BaseCommand):
                                     cv2.circle(frame, puntero_px, 20, (255, 0, 255), 3)
 
                                 elif self.detectar_gesto_cuernos(hand_landmarks):
-                                    draw_x, draw_y = self.obtener_posicion_indice(hand_landmarks)
+                                    draw_x = punto_base_x
+                                    draw_y = punto_base_y
                                     
                                     if self.esta_moviendo:
                                         self.esta_moviendo = False
