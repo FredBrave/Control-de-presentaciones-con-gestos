@@ -266,9 +266,16 @@ class Command(BaseCommand):
         
         pulgar_tip = landmarks[4]
         indice_tip = landmarks[8]
+        medio_tip = landmarks[12]
+        medio_mcp = landmarks[9]
         
-        distancia = self.calcular_distancia(pulgar_tip, indice_tip, ancho_frame, alto_frame)
-        return distancia < 30
+        distancia_pinza = self.calcular_distancia(pulgar_tip, indice_tip, ancho_frame, alto_frame)
+
+        medio_extendido = medio_tip.y < medio_mcp.y - 0.05
+
+        pinza_activa = distancia_pinza < 25 and medio_extendido
+        
+        return pinza_activa
 
     def mostrar_feedback_toggle_modo(self, frame, ancho_frame, alto_frame):
         tiempo_actual = time.time()
