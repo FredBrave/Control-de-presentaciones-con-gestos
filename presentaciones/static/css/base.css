@@ -229,10 +229,17 @@ body {
 }
 
 
+
 .user-controls {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
+    gap: 1rem;
+    margin-right: 2rem;
+}
+
+.user-controls form {
+    margin: 0;
+    padding: 0;
 }
 
 .user-pill {
