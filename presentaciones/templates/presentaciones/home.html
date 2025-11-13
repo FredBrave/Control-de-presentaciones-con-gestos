@@ -109,7 +109,13 @@
                                 </button>
                             </div>
                             
-                            <a href="{{ p.enlace_drive }}" target="_blank" class="presentation-link">
+                            <div class="presentation-link">
+                                <div class="presentation-play-overlay">
+                                    <a href="{% url 'presentaciones:presentar' p.id %}" class="play-btn-overlay">
+                                        <i class="fas fa-play"></i>
+                                    </a>
+                                </div>
+                                
                                 {% if p.miniatura_url %}
                                     <img src="{{ p.miniatura_url }}" 
                                          alt="{{ p.nombre }}" 
@@ -127,7 +133,7 @@
                                         <i class="fas fa-file-powerpoint fa-3x"></i>
                                     </div>
                                 {% endif %}
-                            </a>
+                            </div>
                             
                             <h3 class="presentation-title" title="{{ p.nombre }}">{{ p.nombre }}</h3>
                             <p class="presentation-date">
